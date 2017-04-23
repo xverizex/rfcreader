@@ -13,7 +13,7 @@
 например:
 ```bash
 dir=/root/rfc
-txt=vim
+txt=less
 pdf=
 ```
 
