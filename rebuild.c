@@ -30,8 +30,8 @@ int main ( int argc, char *argv[] )
 				space = fgets ( line, 254, file );
 				if ( space == NULL ) break;
 				while ( *space == 0x20 ) space++;
-				rfcdoc [ strlen ( rfcdoc ) - 1] = 0;
-				strncat ( rfcdoc, space, strlen ( space ) - 1 );
+				rfcdoc [ strlen ( rfcdoc ) ] = 32;
+				strncat ( rfcdoc, space, strlen ( space ) - 1);
 			}
 			/* вывести строку в новый файл */
 			fprintf ( out, "%s\n", rfcdoc );
