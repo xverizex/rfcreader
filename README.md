@@ -39,5 +39,5 @@ $./updatedb.sh ~/rfc
 ![](http://i.imgur.com/0rbf9g2.png)
 
 # видео:
-<a href=https://youtu.be/JrrcUIgJ3oI>https://youtu.be/JrrcUIgJ3oI<a/>
+<a href=https://youtu.be/R_9xJGaYoFk>https://youtu.be/R_9xJGaYoFk<a/>
 
