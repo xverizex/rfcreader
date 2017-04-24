@@ -31,6 +31,7 @@
 #include <sys/stat.h>
 #include <errno.h>
 #include <ctype.h>
+#include <signal.h>
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define to_transfer_to_other_line for
 #define if_have_path_and_file_of_list if (( cf->datadir ) && ( cf->list ))
@@ -48,7 +49,78 @@
 #define XBACKSPACE 127
 #define KEY_F11 410
 
+int length; /* длина для информационног окна, если длина превышает, написать на следующей строке */
+struct winsize ws; /* структура для хранения размера окна терминала */
+char **choices = NULL; /* здесь храняться строки заголовки документов */
+char *dir;
+const char *cur_item; /* указатель на текущую ячейку */
+int row;
 
+/* для curses */
+ITEM **my_items;
+MENU *my_menu;
+WINDOW *my_iteml;
+WINDOW *botton;
+WINDOW *notice;
+
+#if 0
+int choice_format_file ()
+{
+	ITEM **choice_format = calloc ( 3, sizeof ( ITEM * ) );
+	char *choice_f[] = {  "txt" , "pdf" };
+	choice_format[0] = new_item(choice_f[0], NULL);
+	choice_format[1] = new_item(choice_f[1], NULL);
+	MENU *my_format = new_menu((ITEM **)choice_format);
+	WINDOW *chf = newwin( 3, 10, ws.ws_row / 2, ws.ws_col / 2 - 10 );
+	keypad(chf,TRUE);
+	set_menu_win(my_format,chf);
+	set_menu_mark(my_format," * ");
+	post_menu(my_format);
+	wrefresh( chf );
+}
+#endif
+
+/* определяет, читается документ или нет */
+enum docs { VIEW, MENU_CURSES } read_doc;
+
+/* функция смены размера окна терминала */
+static void switch_window ( int signal )
+{
+	if ( read_doc == VIEW ) return;
+
+	if ( ioctl ( 0, TIOCGWINSZ, &ws ) < 0 )
+		perror ( "winsize get ioctl" );
+
+	cur_item = item_name(current_item(my_menu));
+	row = item_index(current_item(my_menu));
+	unpost_menu(my_menu);	
+	free_menu(my_menu);
+	my_menu = new_menu((ITEM **)my_items);
+	my_iteml = derwin(botton, 16, ws.ws_col - 2, SUBWIN, 1);	
+	notice = derwin(botton, ws.ws_row - 19 , ws.ws_col - 2, 19, 1);
+	wclear ( notice );
+	keypad(my_iteml,TRUE);
+	set_menu_win(my_menu,my_iteml);
+					
+	set_menu_mark(my_menu," * ");
+	post_menu(my_menu);
+	set_top_row(my_menu,row);
+	wrefresh(botton);
+	wrefresh(my_iteml);
+	dir = (char *)&cur_item[0];
+	if ( dir ){
+		mvwprintw(notice,0,0,"%s",dir);
+		length=strlen(dir);
+		to_transfer_to_other_line(int line=0;length > ws.ws_col;line++){
+			dir += length;
+			mvwprintw( notice,line ,0,"%s",dir);
+			length=strlen(dir);
+		}
+	}
+	wrefresh(notice);
+}
+
+/* получить путь к файлу настроек */
 char * getpath()
 {
 	char *envhome = getenv("HOME");
@@ -120,7 +192,7 @@ struct configs * getconfig()
 				while(*ptr == 32)
 					ptr++;
 			}
-			int length = strlen(ptr) - 1;
+			length = strlen(ptr) - 1;
 			cf->datadir = calloc(length,sizeof(char));
 			strncpy(cf->datadir, ptr, length);
 			cf->index = calloc(strlen(cf->datadir) + strlen("/index")  ,sizeof(char));
@@ -162,6 +234,8 @@ struct configs * getconfig()
 }
 int main(int argc, char *argv[])
 {
+	signal ( SIGWINCH, switch_window );
+	read_doc = MENU_CURSES;
 	struct configs * cf = getconfig();
 	FILE *rfd;
 	if ( ( rfd = fopen(cf->index,"r"))==NULL){
@@ -171,7 +245,6 @@ int main(int argc, char *argv[])
 	}
 	char *line = calloc(1024,sizeof(char));
 	int lens = 0 ;
-	char **choices = NULL;
 	choices = (char **) calloc(65535, sizeof(char));
 	int si = 0;
 	int f = 0;
@@ -198,10 +271,6 @@ int main(int argc, char *argv[])
 	
 
 	setlocale(LC_ALL, "");
-	ITEM **my_items;
-	MENU *my_menu;
-	WINDOW *my_iteml;
-	WINDOW *botton;
 	initscr();
 	cbreak();
 	noecho();
@@ -215,7 +284,6 @@ int main(int argc, char *argv[])
 	term.c_cc[VTIME] = 0;
 	tcsetattr(0,TCSANOW,&term);
 
-	struct winsize ws;
 	ioctl(0,TIOCGWINSZ,&ws);
 
 	char * ss = calloc(64,1);
@@ -223,7 +291,6 @@ int main(int argc, char *argv[])
 	int len = 0;
 	char *document = NULL;
 	char *rfc = NULL;
-	char *dir = NULL;
 	int number = 0;
 
 	
@@ -237,7 +304,6 @@ int main(int argc, char *argv[])
 		my_items[i] = new_item(choices[i], NULL);
 	}
 
-	WINDOW *notice;
 	my_menu = new_menu((ITEM **)my_items);
 	botton = newwin(0,0,0,0);
 	my_iteml = derwin(botton, 16, ws.ws_col - 2, SUBWIN, 1);
@@ -247,7 +313,7 @@ int main(int argc, char *argv[])
 	set_menu_mark(my_menu," * ");
 	post_menu(my_menu);
 	mvwaddstr(botton,0,0,">");
-	const char * cur_item = item_name(current_item(my_menu));
+	cur_item = item_name(current_item(my_menu));
 		dir = (char *)&cur_item[0];
 		mvwprintw(notice,0,0,"%s",dir);
 		int length=strlen(dir);
@@ -260,7 +326,6 @@ int main(int argc, char *argv[])
 	wrefresh(my_iteml);
 	wrefresh(notice);
 	int ret = 0;
-	int row = 0;
 	while ( ( c = wgetch(my_iteml)) != ESC){
 		static int pos = 0;
 		switch(c){
@@ -278,6 +343,14 @@ int main(int argc, char *argv[])
 				if (strstr(cur_item," PDF="))
 					viewer = PDF;
 
+#if 0
+				/* если есть и текстовый и pdf */
+				if ( viewer == 3 ) {
+					choice_format_file ( );
+				}
+
+				if ( viewer == 3 ) break;
+#endif
 				snprintf(
 					document, 
 					COMMAND_LINE_SIZE,
@@ -287,6 +360,7 @@ int main(int argc, char *argv[])
 						number,
 						viewer==TXT ? "txt" : "pdf"
 						);
+				read_doc = VIEW;
 				if (system(document) == 512){
 					mvwprintw( 
 							notice, 
@@ -295,8 +369,10 @@ int main(int argc, char *argv[])
 							"error in choices item");
 					free(document);
 					wrefresh(notice);
+					read_doc = MENU_CURSES;
 					break;
 				}
+				read_doc = MENU_CURSES;
 				free(document);
 				wclear(botton);
 				wclear(my_iteml);
@@ -456,9 +532,6 @@ print:
 
 						}
 					}
-						FILE *fff = fopen ( "out", "a" );
-						fprintf ( fff, "%d\n", a );
-						fclose ( fff );
 					for (; a <= i; a++){
 						my_items[a] = new_item(NULL,NULL);
 					}
