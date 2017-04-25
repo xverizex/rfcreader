@@ -49,6 +49,14 @@
 #define XBACKSPACE 127
 #define KEY_F11 410
 
+struct configs {
+	char *index;
+	char *datadir;
+	char *txtviewer;
+	char *pdfviewer;
+};
+struct configs *cf;
+
 int length; /* длина для информационног окна, если длина превышает, написать на следующей строке */
 struct winsize ws; /* структура для хранения размера окна терминала */
 char **choices = NULL; /* здесь храняться строки заголовки документов */
@@ -62,23 +70,6 @@ MENU *my_menu;
 WINDOW *my_iteml;
 WINDOW *botton;
 WINDOW *notice;
-
-#if 0
-int choice_format_file ()
-{
-	ITEM **choice_format = calloc ( 3, sizeof ( ITEM * ) );
-	char *choice_f[] = {  "txt" , "pdf" };
-	choice_format[0] = new_item(choice_f[0], NULL);
-	choice_format[1] = new_item(choice_f[1], NULL);
-	MENU *my_format = new_menu((ITEM **)choice_format);
-	WINDOW *chf = newwin( 3, 10, ws.ws_row / 2, ws.ws_col / 2 - 10 );
-	keypad(chf,TRUE);
-	set_menu_win(my_format,chf);
-	set_menu_mark(my_format," * ");
-	post_menu(my_format);
-	wrefresh( chf );
-}
-#endif
 
 /* определяет, читается документ или нет */
 enum docs { VIEW, MENU_CURSES } read_doc;
@@ -163,19 +154,13 @@ char * getpath()
 
 }
 
-struct configs {
-	char *index;
-	char *datadir;
-	char *txtviewer;
-	char *pdfviewer;
-};
 
 struct configs * getconfig()
 {
 	char * path = getpath();
 	FILE * conf;
 	char *ptr;
-	struct configs * cf = calloc(1,sizeof(struct configs));
+	cf = calloc(1,sizeof(struct configs));
 	char *line = calloc(128,sizeof(char));
 	if ( ( conf = fopen(path,"r")) == NULL){
 		perror("fopen");
@@ -334,48 +319,43 @@ int main(int argc, char *argv[])
 				row = item_index(current_item(my_menu));
 				document = calloc(180,1);
 				rfc = calloc(10,1);
-				int viewer = -1;
+				int viewer = 0;
 				sscanf(cur_item, "%s ", rfc);
 				number = atoi(rfc);
 
-				if(strstr(cur_item," TXT="))
-					viewer = TXT;
 				if (strstr(cur_item," PDF="))
 					viewer = PDF;
+				if(strstr(cur_item," TXT="))
+					viewer = TXT;
 
-#if 0
-				/* если есть и текстовый и pdf */
-				if ( viewer == 3 ) {
-					choice_format_file ( );
-				}
+					memset ( document, 0, COMMAND_LINE_SIZE );
 
-				if ( viewer == 3 ) break;
-#endif
-				snprintf(
-					document, 
-					COMMAND_LINE_SIZE,
-					"%s %s/rfc%d.%s",
-					viewer==TXT ? cf->txtviewer : cf->pdfviewer  ,
+					snprintf( document, COMMAND_LINE_SIZE,
+						"%s %s/rfc%d.%s",
+						viewer==TXT ? cf->txtviewer : cf->pdfviewer  ,
 						cf->datadir ,
 						number,
 						viewer==TXT ? "txt" : "pdf"
 						);
-				read_doc = VIEW;
-				if (system(document) == 512){
-					mvwprintw( 
+					read_doc = VIEW;
+					if (system(document) == 512){
+						mvwprintw( 
 							notice, 
 							0, 
 							0, 
 							"error in choices item");
-					free(document);
-					wrefresh(notice);
-					read_doc = MENU_CURSES;
-					break;
-				}
+						free(document);
+						wrefresh(notice);
+						read_doc = MENU_CURSES;
+						break;
+					}
 				read_doc = MENU_CURSES;
+				if ( document )
 				free(document);
+#if 0
 				wclear(botton);
 				wclear(my_iteml);
+#endif
 				cur_item = item_name(current_item(my_menu));
 				dir = (char *)&cur_item[0];
 					mvwprintw(notice,0 ,0,"%s",dir);
