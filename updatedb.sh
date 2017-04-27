@@ -15,7 +15,7 @@ then
 		rm -r $1/*
 	fi
 	echo "extracting ..."
-	tar zxf RFC-all.tar.gz $1
+	tar zxf RFC-all.tar.gz -C $1
 fi
 ./rebuild_rfc "$1/rfc-index.txt" # list rfc docs
 if [ -f index ]
