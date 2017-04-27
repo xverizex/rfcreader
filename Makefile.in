@@ -274,6 +274,7 @@ top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
 rebuild_SOURCES = rebuild.c
 rfcreader_SOURCES = main.c
+AM_CFLAGS = -std=c99
 AUTOMAKE_OPTIONS = foreign
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
