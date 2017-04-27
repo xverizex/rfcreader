@@ -43,6 +43,7 @@
 #define COMMAND_LINE_SIZE 128
 #endif
 #define ESC 27
+#define DEL 330
 #define NEWLINE 10
 #define CARRIAGE 13
 #define TERMBACKSPACE 263
@@ -549,6 +550,8 @@ int main(int argc, char *argv[])
 				break;
 			default:
 					if (c == KEY_F11)
+						break;
+					if ( c == DEL )
 						break;
 
 					ss[pos]=c;
