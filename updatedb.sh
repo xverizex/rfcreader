@@ -30,4 +30,10 @@ then
 		${UNPACK}
 fi
 ./rebuild "$1/rfc-index.txt" # list rfc docs
-mv index "$1/index"
+if [ -f index ]
+then
+	mv index "$1/index"
+else
+	rebuild "$1/rfc-index.txt" # list rfc docs
+	mv index "$1/index"
+fi
