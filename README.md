@@ -1,5 +1,8 @@
-# rfcreader
-**rfcreader** это удобный инструмент для навигации по документам rfc.
+# rfcreader 0.3
+**rfcreader** это удобный инструмент для навигации по документам rfc.<br>
+* обработка изменения размеров терминала.
+* выбор просмотра txt или pdf, (если доступно).
+* поиск ключевых слов не зависит от регистра букв.
 
 Файл настроек должен лежать в `$HOME/.rfcreader`, при первом запуске
 **rfcreader** его создаст.
@@ -22,8 +25,8 @@ pdf=
 ```bash
 $make
 $mkdir ~/rfc
+$sudo make install
 $./updatedb.sh ~/rfc
-#make install
 ```
 
 запуск:
@@ -35,9 +38,13 @@ $./updatedb.sh ~/rfc
 Выбрать нужный элемент спользуя клавиши вниз вверх и нажать клавишу Enter.<br> 
 Выход из программы клавиша ESC.<br>
 
-# изображение:
-![](http://i.imgur.com/0rbf9g2.png)
+# изображения:
+**rfc документ 1178 для выбора названия для своего компьютера**
+![](http://i.imgur.com/HmYddLC.png)
+**когда, несколько документов ( txt и pdf ), то можно выбрать какой открыть**
+![](http://i.imgur.com/lzuvFkZ.png)
 
 # видео:
-<a href=https://youtu.be/R_9xJGaYoFk>https://youtu.be/R_9xJGaYoFk<a/>
+**также доступно новое видео**
+<a href=https://youtu.be/OvY88qDFU8c>https://youtu.be/OvY88qDFU8c<a/>
 
