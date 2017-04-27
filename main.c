@@ -74,6 +74,83 @@ WINDOW *notice;
 /* определяет, читается документ или нет */
 enum docs { VIEW, MENU_CURSES } read_doc;
 
+/* функция выбора формата просмотра */
+static void select_format ( int number )
+{
+	ITEM **my_format;
+	MENU *smenu;
+	WINDOW *formats;
+	char *choice[] = { "txt", "pdf", 0 };
+	my_format = (ITEM **)calloc(3, sizeof(ITEM *));
+
+	my_format[0] = new_item(choice[0], NULL);
+	my_format[1] = new_item(choice[1], NULL);
+	my_format[2] = new_item(choice[2], NULL);
+
+	smenu = new_menu((ITEM **)my_format);
+	formats = newwin(3,10, ws.ws_row / 2, ws.ws_col / 2);
+	set_menu_win(smenu,formats);
+	keypad(formats,TRUE);
+	keypad(my_iteml,FALSE);
+	set_menu_mark(smenu," * ");
+	post_menu(smenu);
+	wrefresh(formats);
+	int c;
+	char *document;
+	int viewer = 0;
+	int srow = 0;
+	int ret;
+	while ( ( c = wgetch ( formats ) ) != ESC ) {
+		switch ( c ) {
+			/* выбор формата */
+			case CARRIAGE:
+			case NEWLINE:
+				cur_item = item_name(current_item(smenu));
+				if ( !strncmp ( cur_item, "txt", 3 ) ) srow = 0;
+				if ( !strncmp ( cur_item, "pdf", 3 ) ) srow = 1;
+
+				document = calloc(180,1);
+
+				memset ( document, 0, COMMAND_LINE_SIZE );
+
+				snprintf( document, COMMAND_LINE_SIZE,
+					"%s %s/rfc%d.%s",
+					srow == 0 ? cf->txtviewer : cf->pdfviewer  ,
+					cf->datadir ,
+					number,
+					cur_item
+					);
+					read_doc = VIEW;
+				if (system(document) == 512){
+					mvwprintw( 
+						notice, 
+						0, 
+						0, 
+						"error in choices item");
+					free(document);
+					read_doc = MENU_CURSES;
+					break;
+				}
+				read_doc = MENU_CURSES;
+				if ( document ) free(document);
+				keypad(formats,FALSE);
+				keypad(my_iteml,TRUE);
+				return;
+				break;
+				/* перемещение по ячейкам */
+			case KEY_UP: 
+				ret = menu_driver(smenu, REQ_UP_ITEM);
+				if ( ret == E_REQUEST_DENIED ) break;
+				break;
+			case KEY_DOWN:
+				ret = menu_driver(smenu, REQ_DOWN_ITEM);
+				if ( ret == E_REQUEST_DENIED ) break;
+				break;
+		}
+	}
+	return;
+}
+
 /* функция смены размера окна терминала */
 static void switch_window ( int signal )
 {
@@ -155,7 +232,7 @@ char * getpath()
 }
 
 
-struct configs * getconfig()
+static struct configs * getconfig()
 {
 	char * path = getpath();
 	FILE * conf;
@@ -324,10 +401,13 @@ int main(int argc, char *argv[])
 				number = atoi(rfc);
 
 				if (strstr(cur_item," PDF="))
-					viewer = PDF;
+					viewer += PDF;
 				if(strstr(cur_item," TXT="))
-					viewer = TXT;
+					viewer += TXT;
 
+				if ( viewer == 3 ) {
+					select_format ( number );
+				} else {
 					memset ( document, 0, COMMAND_LINE_SIZE );
 
 					snprintf( document, COMMAND_LINE_SIZE,
@@ -349,6 +429,7 @@ int main(int argc, char *argv[])
 						read_doc = MENU_CURSES;
 						break;
 					}
+				}
 				read_doc = MENU_CURSES;
 				if ( document )
 				free(document);
