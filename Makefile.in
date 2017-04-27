@@ -86,7 +86,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = rebuild$(EXEEXT) rfcreader$(EXEEXT)
+bin_PROGRAMS = rebuild_rfc$(EXEEXT) rfcreader$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -102,9 +102,9 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_rebuild_OBJECTS = rebuild.$(OBJEXT)
-rebuild_OBJECTS = $(am_rebuild_OBJECTS)
-rebuild_LDADD = $(LDADD)
+am_rebuild_rfc_OBJECTS = rebuild.$(OBJEXT)
+rebuild_rfc_OBJECTS = $(am_rebuild_rfc_OBJECTS)
+rebuild_rfc_LDADD = $(LDADD)
 am_rfcreader_OBJECTS = main.$(OBJEXT)
 rfcreader_OBJECTS = $(am_rfcreader_OBJECTS)
 rfcreader_LDADD = $(LDADD)
@@ -136,8 +136,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(rebuild_SOURCES) $(rfcreader_SOURCES)
-DIST_SOURCES = $(rebuild_SOURCES) $(rfcreader_SOURCES)
+SOURCES = $(rebuild_rfc_SOURCES) $(rfcreader_SOURCES)
+DIST_SOURCES = $(rebuild_rfc_SOURCES) $(rfcreader_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -272,7 +272,7 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-rebuild_SOURCES = rebuild.c
+rebuild_rfc_SOURCES = rebuild.c
 rfcreader_SOURCES = main.c
 AM_CFLAGS = -std=c99
 AUTOMAKE_OPTIONS = foreign
@@ -372,9 +372,9 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
-rebuild$(EXEEXT): $(rebuild_OBJECTS) $(rebuild_DEPENDENCIES) $(EXTRA_rebuild_DEPENDENCIES) 
-	@rm -f rebuild$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(rebuild_OBJECTS) $(rebuild_LDADD) $(LIBS)
+rebuild_rfc$(EXEEXT): $(rebuild_rfc_OBJECTS) $(rebuild_rfc_DEPENDENCIES) $(EXTRA_rebuild_rfc_DEPENDENCIES) 
+	@rm -f rebuild_rfc$(EXEEXT)
+	$(AM_V_CCLD)$(LINK) $(rebuild_rfc_OBJECTS) $(rebuild_rfc_LDADD) $(LIBS)
 
 rfcreader$(EXEEXT): $(rfcreader_OBJECTS) $(rfcreader_DEPENDENCIES) $(EXTRA_rfcreader_DEPENDENCIES) 
 	@rm -f rfcreader$(EXEEXT)
