@@ -17,11 +17,11 @@ then
 	echo "extracting ..."
 	tar zxf RFC-all.tar.gz $1
 fi
-./rebuild "$1/rfc-index.txt" # list rfc docs
+./rebuild_rfc "$1/rfc-index.txt" # list rfc docs
 if [ -f index ]
 then
 	mv index "$1/index"
 else
-	rebuild "$1/rfc-index.txt" # list rfc docs
+	rebuild_rfc "$1/rfc-index.txt" # list rfc docs
 	mv index "$1/index"
 fi
