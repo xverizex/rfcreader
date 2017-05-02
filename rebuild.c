@@ -1,12 +1,10 @@
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
-#include <ctype.h>
+#include "settings.h"
 
-int main ( int argc, char *argv[] ) 
+int rebuild ( )
 {
-	if ( argc < 1 ) exit ( EXIT_FAILURE );
-	FILE *file = fopen ( argv[1], "r" );
+	char datadir[255];
+	sprintf ( datadir, "%s/rfc-index.txt", cf->datadir );
+	FILE *file = fopen ( datadir, "r" );
 
 	/* читать строки, пока не найдётся второй раз строка RFC INDEX */
 	char line[255];
@@ -19,7 +17,9 @@ int main ( int argc, char *argv[] )
 
 	/* считывать остальные строки */
 	FILE *out;
-	out = fopen ( "index", "w" );
+	char dt[255];
+	sprintf ( dt, "%s/index\0", cf->datadir );
+	out = fopen ( dt, "w" );
 	char rfcdoc[1024];
 	char *space;
 	while ( fgets ( line, 254, file ) != NULL ) {

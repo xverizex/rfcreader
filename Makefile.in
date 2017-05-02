@@ -86,7 +86,7 @@ POST_INSTALL = :
 NORMAL_UNINSTALL = :
 PRE_UNINSTALL = :
 POST_UNINSTALL = :
-bin_PROGRAMS = rebuild_rfc$(EXEEXT) rfcreader$(EXEEXT)
+bin_PROGRAMS = rfcreader$(EXEEXT)
 subdir = .
 ACLOCAL_M4 = $(top_srcdir)/aclocal.m4
 am__aclocal_m4_deps = $(top_srcdir)/configure.ac
@@ -102,10 +102,8 @@ CONFIG_CLEAN_FILES =
 CONFIG_CLEAN_VPATH_FILES =
 am__installdirs = "$(DESTDIR)$(bindir)"
 PROGRAMS = $(bin_PROGRAMS)
-am_rebuild_rfc_OBJECTS = rebuild.$(OBJEXT)
-rebuild_rfc_OBJECTS = $(am_rebuild_rfc_OBJECTS)
-rebuild_rfc_LDADD = $(LDADD)
-am_rfcreader_OBJECTS = main.$(OBJEXT)
+am_rfcreader_OBJECTS = main.$(OBJEXT) settings.$(OBJEXT) \
+	update.$(OBJEXT) rebuild.$(OBJEXT)
 rfcreader_OBJECTS = $(am_rfcreader_OBJECTS)
 rfcreader_LDADD = $(LDADD)
 AM_V_P = $(am__v_P_@AM_V@)
@@ -136,8 +134,8 @@ AM_V_CCLD = $(am__v_CCLD_@AM_V@)
 am__v_CCLD_ = $(am__v_CCLD_@AM_DEFAULT_V@)
 am__v_CCLD_0 = @echo "  CCLD    " $@;
 am__v_CCLD_1 = 
-SOURCES = $(rebuild_rfc_SOURCES) $(rfcreader_SOURCES)
-DIST_SOURCES = $(rebuild_rfc_SOURCES) $(rfcreader_SOURCES)
+SOURCES = $(rfcreader_SOURCES)
+DIST_SOURCES = $(rfcreader_SOURCES)
 am__can_run_installinfo = \
   case $$AM_UPDATE_INFO_DIR in \
     n|no|NO) false;; \
@@ -272,9 +270,8 @@ target_alias = @target_alias@
 top_build_prefix = @top_build_prefix@
 top_builddir = @top_builddir@
 top_srcdir = @top_srcdir@
-rebuild_rfc_SOURCES = rebuild.c
-rfcreader_SOURCES = main.c
-AM_CFLAGS = -std=c99
+rfcreader_SOURCES = main.c settings.c update.c rebuild.c
+AM_CFLAGS = 
 AUTOMAKE_OPTIONS = foreign
 all: config.h
 	$(MAKE) $(AM_MAKEFLAGS) all-am
@@ -372,10 +369,6 @@ uninstall-binPROGRAMS:
 clean-binPROGRAMS:
 	-test -z "$(bin_PROGRAMS)" || rm -f $(bin_PROGRAMS)
 
-rebuild_rfc$(EXEEXT): $(rebuild_rfc_OBJECTS) $(rebuild_rfc_DEPENDENCIES) $(EXTRA_rebuild_rfc_DEPENDENCIES) 
-	@rm -f rebuild_rfc$(EXEEXT)
-	$(AM_V_CCLD)$(LINK) $(rebuild_rfc_OBJECTS) $(rebuild_rfc_LDADD) $(LIBS)
-
 rfcreader$(EXEEXT): $(rfcreader_OBJECTS) $(rfcreader_DEPENDENCIES) $(EXTRA_rfcreader_DEPENDENCIES) 
 	@rm -f rfcreader$(EXEEXT)
 	$(AM_V_CCLD)$(LINK) $(rfcreader_OBJECTS) $(rfcreader_LDADD) $(LIBS)
@@ -388,6 +381,8 @@ distclean-compile:
 
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/main.Po@am__quote@
 @AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/rebuild.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/settings.Po@am__quote@
+@AMDEP_TRUE@@am__include@ @am__quote@./$(DEPDIR)/update.Po@am__quote@
 
 .c.o:
 @am__fastdepCC_TRUE@	$(AM_V_CC)$(COMPILE) -MT $@ -MD -MP -MF $(DEPDIR)/$*.Tpo -c -o $@ $<

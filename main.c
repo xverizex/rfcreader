@@ -18,24 +18,9 @@
  * -------------------------------------------------------------------/
  */
 
-#include <stdio.h>
-#include <locale.h>
-#include <menu.h>
-#include <curses.h>
-#include <stdlib.h>
-#include <termios.h>
-#include <string.h>
-#include <stdlib.h>
-#include <sys/ioctl.h>
-#include <sys/types.h>
-#include <sys/stat.h>
-#include <errno.h>
-#include <ctype.h>
-#include <signal.h>
+#include "settings.h"
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
 #define to_transfer_to_other_line for
-#define if_have_path_and_file_of_list if (( cf->datadir ) && ( cf->list ))
-#define read_every_line_in_config_file  while(fgets(line,127,conf)!=NULL)
 #define TXT 1
 #define PDF 2
 #define SUBWIN 2
@@ -50,15 +35,7 @@
 #define XBACKSPACE 127
 #define KEY_F11 410
 
-struct configs {
-	char *index;
-	char *datadir;
-	char *txtviewer;
-	char *pdfviewer;
-};
-struct configs *cf;
 
-int length; /* длина для информационног окна, если длина превышает, написать на следующей строке */
 struct winsize ws; /* структура для хранения размера окна терминала */
 char **choices = NULL; /* здесь храняться строки заголовки документов */
 char *dir;
@@ -188,121 +165,32 @@ static void switch_window ( int signal )
 	}
 	wrefresh(notice);
 }
+#define ECORRECT "\033[5;32mcheck correctness of settings and access rights\033[0m\n"
 
-/* получить путь к файлу настроек */
-char * getpath()
-{
-	char *envhome = getenv("HOME");
-	char *string = calloc(strlen(envhome) + strlen("/.rfcreader") , sizeof(char));
-	sprintf(string,"%s/.rfcreader",envhome);
-	struct stat st;
-	if (stat(string,&st) == -1){
-		perror("\033[1;33mconfig\033[0m");
-		if (errno & ENOENT){
-			fprintf(stderr,"\033[1;31mno settings\033[0m -> \033[1;32mcreate file setting\033[0m -> ");
-			FILE *newconfig;
-			if ( ( newconfig = fopen(string,"w")) == NULL){
-				perror("fopen");
-				exit(-1);
-			}
-			else
-				fprintf(stderr,"\033[1;34m%s\033[0m\n", ( newconfig == NULL ) ? "file no created" : "file created");
-			if (newconfig != NULL){
-				fprintf(newconfig,
-						"dir=\n"
-						"txt=\n"
-						"pdf=\n"
-						);
-				fclose(newconfig);
-				dprintf(2,"need fill file settings -> %s\n",
-						string);
-				exit(-1);
-			}
+/* получить настройки */
+extern struct configs *getconfig();
 
-			fclose(newconfig);
-		}
+/* обновить */
+extern int update ( void );
 
-	}else
-	if (S_ISDIR(st.st_mode)){
-		fprintf(stderr,"\033[1;33mneed have file, and no dir\033[0m\n");
-		exit(-1);
-	}
-	return string;
-
-
-}
-
-
-static struct configs * getconfig()
-{
-	char * path = getpath();
-	FILE * conf;
-	char *ptr;
-	cf = calloc(1,sizeof(struct configs));
-	char *line = calloc(128,sizeof(char));
-	if ( ( conf = fopen(path,"r")) == NULL){
-		perror("fopen");
-		exit(-1);
-	}
-	while(fgets(line,127,conf)!=NULL){
-		ptr = line;
-		if (strncmp(line,"dir",3)==0){
-			ptr += 4;
-			if (*ptr == 61){
-				ptr++;
-			}
-			else if (*ptr == 32){
-				while(*ptr == 32)
-					ptr++;
-			}
-			length = strlen(ptr) - 1;
-			cf->datadir = calloc(length,sizeof(char));
-			strncpy(cf->datadir, ptr, length);
-			cf->index = calloc(strlen(cf->datadir) + strlen("/index")  ,sizeof(char));
-			sprintf(cf->index,"%s/%s",cf->datadir,"index");
-		}
-		if (strncmp(line,"txt",3)==0){
-			ptr += 4;
-			if (*ptr == 61){
-				ptr++;
-			}
-			else if (*ptr == 32){
-				while(*ptr == 32)
-					ptr++;
-			}
-			int length = strlen(ptr) - 1;
-			cf->txtviewer = calloc(length,sizeof(char));
-			strncpy(cf->txtviewer, ptr, length);
-		}
-		if (strncmp(line,"pdf",3)==0){
-			ptr += 4;
-			if (*ptr == 61){
-				ptr++;
-			}
-			else if (*ptr == 32){
-				while(*ptr == 32)
-					ptr++;
-			}
-			int length = strlen(ptr) - 1;
-			if ( length == 0 )
-				cf->pdfviewer = NULL;
-			else{
-				cf->pdfviewer = calloc(length,sizeof(char));
-				strncpy(cf->pdfviewer, ptr, length);
-			}
-		}
-	}
-	fclose(conf);
-	return cf;
-}
 int main(int argc, char *argv[])
 {
+
+
 	signal ( SIGWINCH, switch_window );
 	read_doc = MENU_CURSES;
 	struct configs * cf = getconfig();
+
+	/* если нужно обновить */
+	if ( argc >= 2 )
+	if ( !strncmp ( argv[1], "-update\0", 8 ) ) {
+		update ( );
+		exit ( EXIT_SUCCESS );
+	}
+
 	FILE *rfd;
 	if ( ( rfd = fopen(cf->index,"r"))==NULL){
-		dprintf(2,"\033[5;32mcheck correctness of settings and access rights\033[0m\n");
+		fprintf(stderr, ECORRECT );
 		perror("fopen");
 		return 0;
 	}
