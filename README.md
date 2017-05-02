@@ -29,6 +29,8 @@ $ make
 ```bash
 rfcreader -update
 ```
+**внимание** rfcreader обновиться только если указан каталог в dir в файле настроек.
+
 запуск:
 `rfcreader`
 
