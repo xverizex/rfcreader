@@ -3850,6 +3850,12 @@ _ACEOF
 
   LIBS="-lcurses $LIBS"
 
+else
+
+	echo " no curses library;please install curses library; ";
+	exit
+
+
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for new_menu in -lmenu" >&5
@@ -3895,6 +3901,12 @@ _ACEOF
 
   LIBS="-lmenu $LIBS"
 
+else
+
+	echo " no menu ncurses;please install menu ncurses ";
+	exit
+
+
 fi
 
 { $as_echo "$as_me:${as_lineno-$LINENO}: checking for SSL_library_init in -lssl" >&5
@@ -3939,6 +3951,12 @@ if test "x$ac_cv_lib_ssl_SSL_library_init" = xyes; then :
 _ACEOF
 
   LIBS="-lssl $LIBS"
+
+else
+
+	echo " no ssl library;please install ssl library ";
+	exit
+
 
 fi
 

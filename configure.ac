@@ -11,9 +11,24 @@ AM_INIT_AUTOMAKE
 AC_PROG_CC
 
 # Checks for libraries.
-AC_CHECK_LIB([curses],[newwin])
-AC_CHECK_LIB([menu],[new_menu])
-AC_CHECK_LIB([ssl],[SSL_library_init])
+AC_CHECK_LIB([curses],[newwin],[],
+[
+	echo "[ no curses library;please install curses library; ]";
+	exit
+]
+)
+AC_CHECK_LIB([menu],[new_menu],[],
+[
+	echo "[ no menu ncurses;please install menu ncurses ]";
+	exit
+]
+)
+AC_CHECK_LIB([ssl],[SSL_library_init],[],
+[
+	echo "[ no ssl library;please install ssl library ]";
+	exit
+]
+)
 
 # Checks for header files.
 AC_CHECK_HEADERS([arpa/inet.h locale.h netdb.h netinet/in.h stdlib.h string.h sys/ioctl.h sys/socket.h termios.h])
