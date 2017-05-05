@@ -98,11 +98,35 @@ struct configs * getconfig()
 				while(*ptr == 32)
 					ptr++;
 			}
-			length = strlen(ptr) - 1;
-			cf->datadir = calloc(length,sizeof(char));
-			strncpy(cf->datadir, ptr, length);
-			cf->index = calloc(strlen(cf->datadir) + strlen("/index")  ,sizeof(char));
-			sprintf(cf->index,"%s/%s",cf->datadir,"index");
+
+			/* блок для составляения строки cf->datadir */
+			{
+				/* узнать написано ли ~/, и добавить длину, если определено */
+				char *envhome = NULL;
+				if ( !strncmp ( ptr, "~/", 2 ) ) {
+					envhome = getenv ( "HOME" );
+					ptr += 2;
+				}
+				length = strlen(ptr) + ( envhome ? strlen ( envhome ): 0 ) - 1 ;
+
+				cf->datadir = calloc(length + 1,sizeof(char));
+				/* добавить строку, если определено */
+				if ( envhome ) {
+					int len = strlen ( envhome ) ;
+					char *ph = cf->datadir;
+					strncpy ( ph, envhome, len );
+					ph += len;
+					*ph = '/'; ph++;
+					strncpy( ph, ptr, strlen(ptr));
+					envhome = NULL;
+				}else
+				strncpy(cf->datadir, ptr, length);
+			}
+
+			/* 6 - /index */
+			cf->index = calloc( length + 7 , 1 );
+			snprintf(cf->index, length + 1,"%s/index",cf->datadir);
+			printf ( "%s\n", cf->index );
 		}
 		if (strncmp(line,"txt",3)==0){
 			ptr += 4;
