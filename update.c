@@ -66,7 +66,7 @@ int update ( )
 	sprintf ( buffer, 
 			"GET /in-notes/tar/RFC-all.tar.gz HTTP/1.1\r\n"
 			"Host: www.rfc-editor.org\r\n"
-			"User-Agent: downloader\r\n"
+			"User-Agent: rfcreader/0.4\r\n"
 			"Accept: */*\r\n"
 			"\r\n"
 		 	);
@@ -77,9 +77,53 @@ int update ( )
 	SSL_set_fd ( ssl, sock );
 	SSL_connect ( ssl );
 
-	SSL_write ( ssl, buffer, strlen ( buffer ) );
+	int ret;
 
-	SSL_read ( ssl, buffer, 4096 );
+	ret = SSL_write ( ssl, buffer, strlen ( buffer ) );
+	/* блок обработки ошибки */
+	{
+		if ( ret < 0 ) {
+			fprintf ( stderr, "ssl read error code %d\n", SSL_get_error ( ssl, ret ) );
+			SSL_shutdown ( ssl );
+			SSL_free ( ssl );
+			SSL_CTX_free ( ctx );
+			shutdown ( sock, SHUT_RDWR );
+			close ( sock );
+			exit ( EXIT_FAILURE );
+		}
+		if ( ret == 0 ) {
+			fprintf ( stderr, "error\n" );
+			SSL_shutdown ( ssl );
+			SSL_free ( ssl );
+			SSL_CTX_free ( ctx );
+			shutdown ( sock, SHUT_RDWR );
+			close ( sock );
+			exit ( EXIT_FAILURE );
+		}
+	}
+
+	ret = SSL_read ( ssl, buffer, 4096 );
+	/* блок обработки ошибки */
+	{
+		if ( ret < 0 ) {
+			fprintf ( stderr, "ssl read error code %d\n", SSL_get_error ( ssl, ret ) );
+			SSL_shutdown ( ssl );
+			SSL_free ( ssl );
+			SSL_CTX_free ( ctx );
+			shutdown ( sock, SHUT_RDWR );
+			close ( sock );
+			exit ( EXIT_FAILURE );
+		}
+		if ( ret == 0 ) {
+			fprintf ( stderr, "error\n" );
+			SSL_shutdown ( ssl );
+			SSL_free ( ssl );
+			SSL_CTX_free ( ctx );
+			shutdown ( sock, SHUT_RDWR );
+			close ( sock );
+			exit ( EXIT_FAILURE );
+		}
+	}
 
 	/* если запрос неправильный */
 	if ( strstr ( buffer, "400 BHTTP/1.1 400 Bad Request" ) ) {
@@ -152,6 +196,7 @@ int update ( )
 
 		fclose ( out );
 	}
+
 
 
 	SSL_shutdown ( ssl );
