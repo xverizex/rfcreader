@@ -194,6 +194,7 @@ int main(int argc, char *argv[])
 		perror("fopen");
 		return 0;
 	}
+	free ( cf->index );
 	char *line = calloc(1024,sizeof(char));
 	int lens = 0 ;
 	choices = (char **) calloc(65535, sizeof(char));
