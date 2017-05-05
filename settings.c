@@ -51,8 +51,22 @@ static Paths * getpath()
 
 				if (newconfig != NULL){
 					fprintf(newconfig,
+							"# dir - path your rfc documents.\n"
+							"# Example:\n"
+							"# dir=~/rfc\n"
+							"# dir=/home/user/rfc\n"
 							"dir=\n"
+							"\n"
+							"# txt - view rfc document.\n"
+							"# Example:\n"
+							"# txt=less\n"
+							"# txt=vi\n"
 							"txt=\n"
+							"\n"
+							"# pdf - view rfc document.\n"
+							"# Example:\n"
+							"# pdf=\n"
+							"# pdf=evince\n"
 							"pdf=\n"
 							);
 					fclose(newconfig);
@@ -89,6 +103,9 @@ struct configs * getconfig()
 	}
 	while(fgets(line,127,conf)!=NULL){
 		ptr = line;
+
+		if ( line[0] == '#' ) continue;
+
 		if (strncmp(line,"dir",3)==0){
 			ptr += 4;
 			if (*ptr == 61){
@@ -107,26 +124,35 @@ struct configs * getconfig()
 					envhome = getenv ( "HOME" );
 					ptr += 2;
 				}
-				length = strlen(ptr) + ( envhome ? strlen ( envhome ): 0 ) - 1 ;
+				int home = envhome ? strlen ( envhome ) : 0;
 
-				cf->datadir = calloc(length + 1,sizeof(char));
+				int datadir = strlen ( ptr ) - 1;
+				length = home + datadir;
+				/* for +/ */
+				if ( envhome ) length++;
+
+				cf->datadir = calloc(length + 1, 1);
 				/* добавить строку, если определено */
 				if ( envhome ) {
-					int len = strlen ( envhome ) ;
 					char *ph = cf->datadir;
-					strncpy ( ph, envhome, len );
-					ph += len;
+					strncpy ( ph, envhome, home );
+					ph += home;
 					*ph = '/'; ph++;
-					strncpy( ph, ptr, strlen(ptr));
+					strncpy( ph, ptr, datadir );
 					envhome = NULL;
 				}else
 				strncpy(cf->datadir, ptr, length);
 			}
 
+			/* если не существует, создать */
+			if ( access ( cf->datadir, F_OK ) ) {
+				mkdir ( cf->datadir, S_IRWXU );
+				fprintf ( stderr, "please run rfcreader -update for downoad rfc tar\n" );
+			}
+
 			/* 6 - /index */
-			cf->index = calloc( length + 7 , 1 );
-			snprintf(cf->index, length + 1,"%s/index",cf->datadir);
-			printf ( "%s\n", cf->index );
+			cf->index = calloc( length + 6 + 1 , 1 );
+			snprintf(cf->index, length + 7,"%s/index",cf->datadir);
 		}
 		if (strncmp(line,"txt",3)==0){
 			ptr += 4;
