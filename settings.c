@@ -9,26 +9,36 @@ static Paths * getpath()
 {
 	char *envhome = getenv("HOME");
 	char settings_dir[255] = { 0 };
-	sprintf ( settings_dir, "%s/.rfcreader", envhome );
+	{
+		int total = strlen ( "/.rfcreader" ) + strlen ( envhome ) ;
+		snprintf ( settings_dir, total, "%s/.rfcreader", envhome );
+	}
 	mkdir ( settings_dir, S_IRWXU );
 
+	char *string = NULL;
 
-	
-	char *string = 
-		calloc(strlen(envhome) + 
-				strlen("/.rfcreader") + 
-				strlen("/rfcreader") +
-				1, 
-				sizeof(char));
+	{
+		int home = strlen ( envhome );
+		int dir = strlen ( "/.rfcreader" );
+		int cfile = strlen ( "/rfcreader" );
+		int total = home + dir + cfile + 1;
+		string = calloc ( total + 1, 1 );
+		snprintf(string, total,"%s/.rfcreader/rfcreader",envhome);
 
-	sprintf(string,"%s/.rfcreader/rfcreader",envhome);
+		envhome = NULL;
+	}
+
 
 	/* копировать в структуру */
 	Paths *p = calloc ( 1, sizeof ( Paths ) );
-	p->cdir = calloc ( strlen ( settings_dir ) + 1, 1 );
-	p->settings = calloc ( strlen ( string ) + 1, 1 );
-	strncpy ( p->cdir, settings_dir, strlen ( settings_dir ) );
-	strncpy ( p->settings, string, strlen ( string ) );
+	{
+		int sdir = strlen ( settings_dir );
+		int ss = strlen ( string );
+		p->cdir = calloc ( sdir + 1, 1 );
+		p->settings = calloc ( ss + 1, 1 );
+		strncpy ( p->cdir, settings_dir, sdir );
+		strncpy ( p->settings, string, ss );
+	}
 
 	/* блок для создания файла */
 	{
@@ -47,6 +57,7 @@ static Paths * getpath()
 					perror("fopen");
 					exit(-1);
 				}
+				free ( string );
 				fprintf(stderr,"%s\n", "file created");
 
 				if (newconfig != NULL){
@@ -81,12 +92,22 @@ static Paths * getpath()
 	}
 	return p;
 }
-
+typedef struct {
+	unsigned int dir:1;
+	unsigned int txt:1;
+	unsigned int pdf:1;
+}conf;
 
 struct configs * getconfig()
 {
 	const Paths *p = getpath();
 	cf = calloc(1,sizeof(struct configs));
+
+	/* для обозначения обработанных данных */
+	conf c;
+	c.dir = 0;
+	c.txt = 0;
+	c.pdf = 0;
 
 	cf->flm = calloc ( strlen ( p->cdir ) + 8, 1 );
 
@@ -105,10 +126,12 @@ struct configs * getconfig()
 		ptr = line;
 
 		if ( line[0] == '#' ) continue;
+		if ( line[0] == 0xa ) continue;
 
 		if (strncmp(line,"dir",3)==0){
-			ptr += 4;
-			if (*ptr == 61){
+			ptr += 3;
+			if ( isalpha ( *ptr ) ) continue;
+			if (*ptr == '='){
 				ptr++;
 			}
 			else if (*ptr == 32){
@@ -153,9 +176,13 @@ struct configs * getconfig()
 			/* 6 - /index */
 			cf->index = calloc( length + 6 + 1 , 1 );
 			snprintf(cf->index, length + 7,"%s/index",cf->datadir);
+
+			/* запись dir обработана */
+			c.dir = 1;
 		}
 		if (strncmp(line,"txt",3)==0){
-			ptr += 4;
+			ptr += 3;
+			if ( isalpha ( *ptr ) ) continue;
 			if (*ptr == 61){
 				ptr++;
 			}
@@ -166,9 +193,12 @@ struct configs * getconfig()
 			int length = strlen(ptr) - 1;
 			cf->txtviewer = calloc(length,sizeof(char));
 			strncpy(cf->txtviewer, ptr, length);
+
+			c.txt = 1;
 		}
 		if (strncmp(line,"pdf",3)==0){
-			ptr += 4;
+			ptr += 3;
+			if ( isalpha ( *ptr ) ) continue;
 			if (*ptr == 61){
 				ptr++;
 			}
@@ -183,8 +213,15 @@ struct configs * getconfig()
 				cf->pdfviewer = calloc(length,sizeof(char));
 				strncpy(cf->pdfviewer, ptr, length);
 			}
+			c.pdf = 1;
 		}
 	}
 	fclose(conf);
+
+	/* проверка значений и вывод ошибок */
+	if ( !c.dir ) {
+		fprintf ( stderr, "please fill dir parameter in %s.\n", path );
+		exit ( EXIT_FAILURE );
+	}
 	return cf;
 }
