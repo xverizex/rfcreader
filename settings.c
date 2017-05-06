@@ -57,7 +57,6 @@ static Paths * getpath()
 					perror("fopen");
 					exit(-1);
 				}
-				free ( string );
 				fprintf(stderr,"%s\n", "file created");
 
 				if (newconfig != NULL){
@@ -90,6 +89,7 @@ static Paths * getpath()
 		}
 
 	}
+	free ( string );
 	return p;
 }
 typedef struct {
@@ -100,7 +100,7 @@ typedef struct {
 
 struct configs * getconfig()
 {
-	const Paths *p = getpath();
+	Paths *p = getpath();
 	cf = calloc(1,sizeof(struct configs));
 
 	/* для обозначения обработанных данных */
@@ -117,13 +117,13 @@ struct configs * getconfig()
 	const char *path = p->settings;
 	FILE * conf;
 	char *ptr;
-	char *line = calloc(128,sizeof(char));
+	char line[128];
 	if ( ( conf = fopen(path,"r")) == NULL){
 		perror("fopen");
 		exit(-1);
 	}
 	while(fgets(line,127,conf)!=NULL){
-		ptr = line;
+		ptr = &line[0];
 
 		if ( line[0] == '#' ) continue;
 		if ( line[0] == 0xa ) continue;
@@ -190,13 +190,15 @@ struct configs * getconfig()
 				while(*ptr == 32)
 					ptr++;
 			}
-			int length = strlen(ptr) - 1;
-			cf->txtviewer = calloc(length,sizeof(char));
-			strncpy(cf->txtviewer, ptr, length);
+			{ 
+				int length = strlen(ptr) - 1;
+				cf->txtviewer = calloc(length + 1, 1);
+				strncpy(cf->txtviewer, ptr, length);
+			}
 
 			c.txt = 1;
 		}
-		if (strncmp(line,"pdf",3)==0){
+		if (!strncmp(line,"pdf",3)){
 			ptr += 3;
 			if ( isalpha ( *ptr ) ) continue;
 			if (*ptr == 61){
@@ -210,7 +212,7 @@ struct configs * getconfig()
 			if ( length == 0 )
 				cf->pdfviewer = NULL;
 			else{
-				cf->pdfviewer = calloc(length,sizeof(char));
+				cf->pdfviewer = calloc(length + 1, 1);
 				strncpy(cf->pdfviewer, ptr, length);
 			}
 			c.pdf = 1;
@@ -223,5 +225,9 @@ struct configs * getconfig()
 		fprintf ( stderr, "please fill dir parameter in %s.\n", path );
 		exit ( EXIT_FAILURE );
 	}
+	path = NULL;
+	free ( p->cdir );
+	free ( p->settings );
+	free (p);
 	return cf;
 }
