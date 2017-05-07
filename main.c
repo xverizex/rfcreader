@@ -459,34 +459,36 @@ print:
 					i = 0;
 					a = 0;
 
-					/* перевести запроса  в нижний регистр */
-					memset ( query, 0, 64 );
-					strncpy ( query, ss, 63 );
-					char *ptr = &query[0];
-					for ( int i = 0; i <= 63; i++, ptr++ ) {
-						if ( *ptr >= 0x41 && *ptr <= 0x5a )
-							*ptr += 0x20;
+					/* перевести запроса  в нижний регистр если включена опция */
+						memset ( query, 0, 64 );
+						strncpy ( query, ss, 63 );
+					if ( cf->reg ) {
+						char *ptr = &query[0];
+						for ( int i = 0; i <= 63; i++, ptr++ ) 
+							if ( *ptr >= 0x41 && *ptr <= 0x5a )
+								*ptr += 0x20;
 					}
 
 
 					for (i = 0; i <= si - 1; i++){
 						/* перевести строку меню в нижний регистр */
-						memset ( query_line, 0, 1024 );
-						strncpy ( query_line, choices[i], strlen ( choices[i] ) - 1 );
-						int len = strlen ( choices[i] );
-						ptr = &query_line[0];
-						for ( int i = 0; i <= len; i++, ptr++ ) {
-							if ( *ptr >= 0x41 && *ptr <= 0x5a )
-								*ptr += 0x20;
+							memset ( query_line, 0, 1024 );
+							strncpy ( query_line, choices[i], strlen ( choices[i] ) - 1 );
+							int len = strlen ( choices[i] );
+						if ( cf->reg ) {
+							ptr = &query_line[0];
+							for ( int i = 0; i <= len; i++, ptr++ ) 
+								if ( *ptr >= 0x41 && *ptr <= 0x5a )
+									*ptr += 0x20;
 						}
+						
 
 
 						if (pos == 0){
 							my_items[i] = new_item(choices[i],NULL);
 							a = i + 1;
 						}
-						else 
-							if ( strstr(query_line, query ) ) {
+						else if ( strstr(query_line, query ) ) {
 							my_items[a] =  new_item(choices[i],NULL);
 							a++;
 
