@@ -195,7 +195,8 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	free ( cf->index );
-	char *line = calloc(1024, 1);
+//	char *line = calloc(1024, 1);
+	char line[1024];
 	int lens = 0 ;
 	choices = (char **) calloc(65535, 1);
 	int si = 0;
@@ -294,6 +295,7 @@ int main(int argc, char *argv[])
 				int viewer = 0;
 				sscanf(cur_item, "%s ", rfc);
 				number = atoi(rfc);
+				free ( rfc );
 
 				if (strstr(cur_item," PDF="))
 					viewer += PDF;
@@ -534,7 +536,6 @@ print:
 	free ( cf->txtviewer );
 	free ( cf->pdfviewer );
 	free ( cf );
-	free ( line );
 	
 	for ( int i = 0; i <= si; i++ ) free ( choices[i] );
 	free ( choices );
