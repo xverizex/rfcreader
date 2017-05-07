@@ -245,5 +245,13 @@ int update ( )
 		fclose ( out_lm );
 	}
 
+	free ( cf->lm );
+	free ( cf->flm );
+	free ( cf->cdir );
+	free ( cf->datadir );
+	free ( cf->txtviewer );
+	free ( cf->pdfviewer );
+	free ( cf );
+
 	exit ( EXIT_SUCCESS );
 }

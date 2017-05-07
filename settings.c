@@ -192,8 +192,10 @@ struct configs * getconfig()
 			}
 			{ 
 				int length = strlen(ptr) - 1;
-				cf->txtviewer = calloc(length + 1, 1);
-				strncpy(cf->txtviewer, ptr, length);
+				if ( length > 0 ) {
+					cf->txtviewer = calloc(length + 1, 1);
+					strncpy(cf->txtviewer, ptr, length);
+				} else cf->txtviewer = NULL;
 			}
 
 			c.txt = 1;

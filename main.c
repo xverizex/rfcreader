@@ -195,9 +195,9 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	free ( cf->index );
-	char *line = calloc(1024,sizeof(char));
+	char *line = calloc(1024, 1);
 	int lens = 0 ;
-	choices = (char **) calloc(65535, sizeof(char));
+	choices = (char **) calloc(65535, 1);
 	int si = 0;
 	int f = 0;
 	char *ptr;
@@ -205,8 +205,13 @@ int main(int argc, char *argv[])
 
 	/* эти строки переводятся в нижний регистр,
 		 такое нужно, чтобы найти искомые подстроки не зависимо от регистра */
+#if 0
 	char *query = calloc ( 64, 1 );/* строка запроса */
 	char *query_line = calloc ( 1024, 1 ); /* cтрока меню */
+#endif
+	char query[64];
+	char query_line[1024];
+
 
 	/* составление меню упрощено из-за rebuild */
 	while( fgets(line,1023,rfd)!=NULL){
@@ -521,8 +526,19 @@ print:
 	}
 
 
+	/* завершение, освобождение участков памяти */
+	free ( cf->lm );
+	free ( cf->flm );
+	free ( cf->cdir );
+	free ( cf->datadir );
+	free ( cf->txtviewer );
+	free ( cf->pdfviewer );
+	free ( cf );
+	free ( line );
 	
-	
+	for ( int i = 0; i <= si; i++ ) free ( choices[i] );
+	free ( choices );
+
 	free(cf);
 	unpost_menu(my_menu);
 	free_menu(my_menu);
