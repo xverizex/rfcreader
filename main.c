@@ -315,6 +315,17 @@ int main(int argc, char *argv[])
 						viewer==TXT ? "txt" : "pdf"
 						);
 					read_doc = VIEW;
+					if ( viewer == 0 ) {
+						mvwprintw( 
+							notice, 
+							0, 
+							0, 
+							"error in choices item");
+						free(document);
+						wrefresh(notice);
+						read_doc = MENU_CURSES;
+						break;
+					}
 					if (system(document) == 512){
 						mvwprintw( 
 							notice, 
