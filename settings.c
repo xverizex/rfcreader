@@ -10,8 +10,8 @@ static Paths * getpath()
 	char *envhome = getenv("HOME");
 	char settings_dir[255] = { 0 };
 	{
-		int total = strlen ( "/.rfcreader" ) + strlen ( envhome ) ;
-		snprintf ( settings_dir, total, "%s/.rfcreader", envhome );
+		int total = strlen ( "/.rfcreader" ) + strlen ( envhome ) + 2;
+		snprintf ( settings_dir, total -1, "%s/.rfcreader", envhome );
 	}
 	mkdir ( settings_dir, S_IRWXU );
 
@@ -78,6 +78,16 @@ static Paths * getpath()
 							"# pdf=\n"
 							"# pdf=evince\n"
 							"pdf=\n"
+							"\n"
+							"# reg - to consider the register.\n"
+							"# if the option is 'on', then search of keywords is carried\n"
+							"# irrespective of a letter case.\n"
+							"# if the option is 'off', search works quicker.\n"
+							"# Example:\n"
+							"# reg=on\n"
+							"# reg=off\n"
+							"reg=on\n"
+							"\n"
 							);
 					fclose(newconfig);
 					fprintf(stderr,"need fill file settings -> %s\n", string);
@@ -96,6 +106,7 @@ typedef struct {
 	unsigned int dir:1;
 	unsigned int txt:1;
 	unsigned int pdf:1;
+	unsigned int reg:1;
 }conf;
 
 struct configs * getconfig()
@@ -108,6 +119,7 @@ struct configs * getconfig()
 	c.dir = 0;
 	c.txt = 0;
 	c.pdf = 0;
+	c.reg = 0;
 
 	cf->flm = calloc ( strlen ( p->cdir ) + 8, 1 );
 
@@ -180,12 +192,11 @@ struct configs * getconfig()
 			/* запись dir обработана */
 			c.dir = 1;
 		}
-		if (strncmp(line,"txt",3)==0){
+		if (!strncmp(line,"txt",3)){
 			ptr += 3;
 			if ( isalpha ( *ptr ) ) continue;
-			if (*ptr == 61){
-				ptr++;
-			}
+			if (*ptr == 61) ptr++;
+			
 			else if (*ptr == 32){
 				while(*ptr == 32)
 					ptr++;
@@ -203,9 +214,8 @@ struct configs * getconfig()
 		if (!strncmp(line,"pdf",3)){
 			ptr += 3;
 			if ( isalpha ( *ptr ) ) continue;
-			if (*ptr == 61){
-				ptr++;
-			}
+			if (*ptr == 61) ptr++;
+			
 			else if (*ptr == 32){
 				while(*ptr == 32)
 					ptr++;
@@ -218,6 +228,35 @@ struct configs * getconfig()
 				strncpy(cf->pdfviewer, ptr, length);
 			}
 			c.pdf = 1;
+		}
+
+		/* если опция поиска ключевых слов в независимости от регистра */
+		if ( !strncmp ( line, "reg", 3 ) ) {
+			ptr += 3;
+			if ( isalpha ( *ptr ) ) continue;
+			if ( *ptr == 61 ) ptr++;
+			if ( *ptr == 32 ) 
+				while ( *ptr == 32 ) ptr++;
+
+			int length = strlen ( ptr ) - 1;
+			if ( length == 0 ){
+				cf->reg = 0;
+				c.reg = 1;
+			}
+			else {
+				*(ptr + length) = 0;
+				if ( !strncmp ( ptr, "on\0", 3 ) ) {
+					cf->reg = 1;
+					c.reg = 1;
+				}else
+				if ( !strncmp ( ptr, "off\0", 4 ) ) {
+					cf->reg = 0;
+					c.reg = 1;
+				}else {
+					fprintf ( stderr, "error in option reg, please choose ( on, off,\\ )\n" );
+					c.reg = 0;
+				}
+			}
 		}
 	}
 	fclose(conf);
