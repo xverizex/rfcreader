@@ -252,7 +252,7 @@ int main(int argc, char *argv[])
 	int number = 0;
 
 	
-	my_items = (ITEM **)calloc(si, sizeof(ITEM *));
+	my_items = (ITEM **)calloc(si+1, sizeof(ITEM *));
 	int i = 0;
 
 	for(; i <= si; i++){
