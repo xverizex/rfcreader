@@ -67,5 +67,5 @@ rfcreader -update
 
 # видео:
 **презентация 0.5 версии**
-<a href=https://youtu.be/DVmlqsSGGBc>https://youtu.be/DVmlqsSGGBc<a/>
+<a href=https://youtu.be/X4xS62gJsWQ>https://youtu.be/X4xS62gJsWQ<a/>
 
