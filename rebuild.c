@@ -17,8 +17,8 @@ int rebuild ( )
 
 	/* считывать остальные строки */
 	FILE *out;
-	char dt[255];
-	sprintf ( dt, "%s/index\0", cf->datadir );
+	char dt[255] = { 0 };
+	sprintf ( dt, "%s/index", cf->datadir );
 	out = fopen ( dt, "w" );
 	char rfcdoc[1024];
 	char *space;
