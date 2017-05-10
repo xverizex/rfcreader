@@ -101,10 +101,10 @@ static Paths * getpath()
 							"bgcolor = black\n"
 							"\n"
 							"# selection foreground color.\n"
-							"sfgcolor = black.\n"
+							"sfgcolor = black\n"
 							"\n"
 							"# selection background color.\n"
-							"sbgcolor = white.\n"
+							"sbgcolor = white\n"
 
 							);
 					fclose(newconfig);
@@ -470,8 +470,8 @@ struct configs * getconfig()
 				c.sfg = 1;
 			}
 		}
-		if ( !strncmp ( line, "sbgcolor", 7 ) ) {
-			ptr += 7;
+		if ( !strncmp ( line, "sbgcolor", 8 ) ) {
+			ptr += 8;
 			if ( isalpha ( *ptr ) ) continue;
 			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
 			if ( *ptr == 61 ) ptr++;
@@ -497,6 +497,7 @@ struct configs * getconfig()
 					fprintf ( stderr, "error in color, maybe cyan\n" );
 				}
 				cf->sbgcolor = GREEN;
+				printf ( "green\n" );
 				c.sbg = 1;
 			}
 			if ( !strncmp ( ptr, "yellow", 6 ) ) {
