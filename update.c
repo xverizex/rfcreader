@@ -66,7 +66,7 @@ int update ( )
 	sprintf ( buffer, 
 			"GET /in-notes/tar/RFC-all.tar.gz HTTP/1.1\r\n"
 			"Host: www.rfc-editor.org\r\n"
-			"User-Agent: rfcreader/0.4\r\n"
+			"User-Agent: rfcreader/0.5\r\n"
 			"Accept: */*\r\n"
 			"\r\n"
 		 	);
@@ -196,7 +196,6 @@ int update ( )
 
 		fclose ( out );
 	}
-
 
 
 	SSL_shutdown ( ssl );

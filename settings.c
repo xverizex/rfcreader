@@ -88,6 +88,24 @@ static Paths * getpath()
 							"# reg=off\n"
 							"reg=on\n"
 							"\n"
+							"# colors.\n"
+							"# available colors.\n"
+							"# black, red, green, yellow, blue, magenta, cyan, white.\n"
+							"# ------------------------------------------------------\n"
+							"# foreground color.\n"
+							"# Example:\n"
+							"# fgcolor = black\n"
+							"fgcolor = white\n"
+							"\n"
+							"# background color.\n"
+							"bgcolor = black\n"
+							"\n"
+							"# selection foreground color.\n"
+							"sfgcolor = black.\n"
+							"\n"
+							"# selection background color.\n"
+							"sbgcolor = white.\n"
+
 							);
 					fclose(newconfig);
 					fprintf(stderr,"need fill file settings -> %s\n", string);
@@ -103,10 +121,15 @@ static Paths * getpath()
 	return p;
 }
 typedef struct {
-	unsigned int dir:1;
-	unsigned int txt:1;
-	unsigned int pdf:1;
-	unsigned int reg:1;
+	unsigned int dir:1 __attribute__ ((aligned(4)));
+	unsigned int txt:1 __attribute__ ((aligned(4)));
+	unsigned int pdf:1 __attribute__ ((aligned(4)));
+	unsigned int reg:1 __attribute__ ((aligned(4)));
+	unsigned int fg:1  __attribute__ ((aligned(4)));
+	unsigned int bg:1  __attribute__ ((aligned(4)));
+	unsigned int sfg:1 __attribute__ ((aligned(4)));
+	unsigned int sbg:1 __attribute__ ((aligned(4)));
+	
 }conf;
 
 struct configs * getconfig()
@@ -143,13 +166,9 @@ struct configs * getconfig()
 		if (strncmp(line,"dir",3)==0){
 			ptr += 3;
 			if ( isalpha ( *ptr ) ) continue;
-			if (*ptr == '='){
-				ptr++;
-			}
-			else if (*ptr == 32){
-				while(*ptr == 32)
-					ptr++;
-			}
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
+			if ( *ptr == 61 ) ptr++;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
 
 			/* блок для составляения строки cf->datadir */
 			{
@@ -195,12 +214,9 @@ struct configs * getconfig()
 		if (!strncmp(line,"txt",3)){
 			ptr += 3;
 			if ( isalpha ( *ptr ) ) continue;
-			if (*ptr == 61) ptr++;
-			
-			else if (*ptr == 32){
-				while(*ptr == 32)
-					ptr++;
-			}
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
+			if ( *ptr == 61 ) ptr++;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
 			{ 
 				int length = strlen(ptr) - 1;
 				if ( length > 0 ) {
@@ -234,8 +250,9 @@ struct configs * getconfig()
 		if ( !strncmp ( line, "reg", 3 ) ) {
 			ptr += 3;
 			if ( isalpha ( *ptr ) ) continue;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
 			if ( *ptr == 61 ) ptr++;
-			if ( *ptr == 32 ) 
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
 				while ( *ptr == 32 ) ptr++;
 
 			int length = strlen ( ptr ) - 1;
@@ -258,6 +275,266 @@ struct configs * getconfig()
 				}
 			}
 		}
+		if ( !strncmp ( line, "fgcolor", 7 ) ) {
+			ptr += 7;
+			if ( isalpha ( *ptr ) ) continue;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
+			if ( *ptr == 61 ) ptr++;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
+
+			int length = strlen ( ptr ) - 1;
+			if ( !strncmp ( ptr, "black", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->fgcolor = BLACK;
+				c.fg = 1;
+			}
+			if ( !strncmp ( ptr, "red", 3 ) ) {
+				if ( isalpha ( *(ptr+3) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->fgcolor = RED;
+				c.fg = 1;
+			}
+			if ( !strncmp ( ptr, "green", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->fgcolor = GREEN;
+				c.fg = 1;
+			}
+			if ( !strncmp ( ptr, "yellow", 6 ) ) {
+				if ( isalpha ( *(ptr+6) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->fgcolor = YELLOW;
+				c.fg = 1;
+			}
+			if ( !strncmp ( ptr, "blue", 4 ) ) {
+				if ( isalpha ( *(ptr+4) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->fgcolor = BLUE;
+				c.fg = 1;
+			}
+			if ( !strncmp ( ptr, "magenta", 7 ) ) {
+				if ( isalpha ( *(ptr+7) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->fgcolor = MAGENTA;
+				c.fg = 1;
+			}
+			if ( !strncmp ( ptr, "cyan", 4 ) ) {
+				if ( isalpha ( *(ptr+4) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->fgcolor = CYAN;
+				c.fg = 1;
+			}
+			if ( !strncmp ( ptr, "white", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->fgcolor = WHITE;
+				c.fg = 1;
+			}
+		}
+		if ( !strncmp ( line, "bgcolor", 7 ) ) {
+			ptr += 7;
+			if ( isalpha ( *ptr ) ) continue;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
+			if ( *ptr == 61 ) ptr++;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
+
+			int length = strlen ( ptr ) - 1;
+			if ( !strncmp ( ptr, "black", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->bgcolor = BLACK;
+				c.bg = 1;
+			}
+			if ( !strncmp ( ptr, "red", 3 ) ) {
+				if ( isalpha ( *(ptr+3) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->bgcolor = RED;
+				c.bg = 1;
+			}
+			if ( !strncmp ( ptr, "green", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->bgcolor = GREEN;
+				c.bg = 1;
+			}
+			if ( !strncmp ( ptr, "yellow", 6 ) ) {
+				if ( isalpha ( *(ptr+6) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->bgcolor = YELLOW;
+				c.bg = 1;
+			}
+			if ( !strncmp ( ptr, "blue", 4 ) ) {
+				if ( isalpha ( *(ptr+4) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->bgcolor = BLUE;
+				c.bg = 1;
+			}
+			if ( !strncmp ( ptr, "magenta", 7 ) ) {
+				if ( isalpha ( *(ptr+7) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->bgcolor = MAGENTA;
+				c.bg = 1;
+			}
+			if ( !strncmp ( ptr, "cyan", 4 ) ) {
+				if ( isalpha ( *(ptr+4) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->bgcolor = CYAN;
+				c.bg = 1;
+			}
+			if ( !strncmp ( ptr, "white", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->bgcolor = WHITE;
+				c.bg = 1;
+			}
+		}
+		if ( !strncmp ( line, "sfgcolor", 8 ) ) {
+			ptr += 8;
+			if ( isalpha ( *ptr ) ) continue;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
+			if ( *ptr == 61 ) ptr++;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
+
+			int length = strlen ( ptr ) - 1;
+			if ( !strncmp ( ptr, "black", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sfgcolor = BLACK;
+				c.sfg = 1;
+			}
+			if ( !strncmp ( ptr, "red", 3 ) ) {
+				if ( isalpha ( *(ptr+3) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sfgcolor = RED;
+				c.sfg = 1;
+			}
+			if ( !strncmp ( ptr, "green", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sfgcolor = GREEN;
+				c.sfg = 1;
+			}
+			if ( !strncmp ( ptr, "yellow", 6 ) ) {
+				if ( isalpha ( *(ptr+6) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sfgcolor = YELLOW;
+				c.sfg = 1;
+			}
+			if ( !strncmp ( ptr, "blue", 4 ) ) {
+				if ( isalpha ( *(ptr+4) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sfgcolor = BLUE;
+				c.sfg = 1;
+			}
+			if ( !strncmp ( ptr, "magenta", 7 ) ) {
+				if ( isalpha ( *(ptr+7) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sfgcolor = MAGENTA;
+				c.sfg = 1;
+			}
+			if ( !strncmp ( ptr, "cyan", 4 ) ) {
+				if ( isalpha ( *(ptr+4) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sfgcolor = CYAN;
+				c.sfg = 1;
+			}
+			if ( !strncmp ( ptr, "white", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sfgcolor = WHITE;
+				c.sfg = 1;
+			}
+		}
+		if ( !strncmp ( line, "sbgcolor", 7 ) ) {
+			ptr += 7;
+			if ( isalpha ( *ptr ) ) continue;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
+			if ( *ptr == 61 ) ptr++;
+			if ( *ptr == 32 ) while ( *ptr == 32 ) ptr++;
+
+			int length = strlen ( ptr ) - 1;
+			if ( !strncmp ( ptr, "black", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sbgcolor = BLACK;
+				c.sbg = 1;
+			}
+			if ( !strncmp ( ptr, "red", 3 ) ) {
+				if ( isalpha ( *(ptr+3) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sbgcolor = RED;
+				c.sbg = 1;
+			}
+			if ( !strncmp ( ptr, "green", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sbgcolor = GREEN;
+				c.sbg = 1;
+			}
+			if ( !strncmp ( ptr, "yellow", 6 ) ) {
+				if ( isalpha ( *(ptr+6) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sbgcolor = YELLOW;
+				c.sbg = 1;
+			}
+			if ( !strncmp ( ptr, "blue", 4 ) ) {
+				if ( isalpha ( *(ptr+4) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sbgcolor = BLUE;
+				c.sbg = 1;
+			}
+			if ( !strncmp ( ptr, "magenta", 7 ) ) {
+				if ( isalpha ( *(ptr+7) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sbgcolor = MAGENTA;
+				c.sbg = 1;
+			}
+			if ( !strncmp ( ptr, "cyan", 4 ) ) {
+				if ( isalpha ( *(ptr+4) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sbgcolor = CYAN;
+				c.sbg = 1;
+			}
+			if ( !strncmp ( ptr, "white", 5 ) ) {
+				if ( isalpha ( *(ptr+5) ) ){
+					fprintf ( stderr, "error in color, maybe cyan\n" );
+				}
+				cf->sbgcolor = WHITE;
+				c.sbg = 1;
+			}
+		}
 	}
 	fclose(conf);
 
@@ -266,6 +543,12 @@ struct configs * getconfig()
 		fprintf ( stderr, "please fill dir parameter in %s.\n", path );
 		exit ( EXIT_FAILURE );
 	}
+	/* установить цвета по умолчанию, если не определены */
+	if ( !c.fg ) cf->fgcolor = WHITE;
+	if ( !c.bg ) cf->bgcolor = BLACK;
+	if ( !c.sfg ) cf->sfgcolor = BLACK;
+	if ( !c.sbg ) cf->sbgcolor = WHITE;
+
 	path = NULL;
 	free ( p->cdir );
 	free ( p->settings );

@@ -20,10 +20,8 @@
 
 #include "settings.h"
 #define ARRAY_SIZE(a) (sizeof(a) / sizeof(a[0]))
-#define to_transfer_to_other_line for
 #define TXT 1
 #define PDF 2
-#define SUBWIN 2
 #ifndef COMMAND_LINE_SIZE
 #define COMMAND_LINE_SIZE 128
 #endif
@@ -35,9 +33,16 @@
 #define XBACKSPACE 127
 #define KEY_F11 410
 
+struct menu {
+	int top;
+	int width;
+	int max;
+	int cur;
+	char menu[9000][255];
+};
+struct menu *menu_ptr;
 
 struct winsize ws; /* структура для хранения размера окна терминала */
-char **choices = NULL; /* здесь храняться строки заголовки документов */
 char *dir;
 const char *cur_item; /* указатель на текущую ячейку */
 int row;
@@ -49,6 +54,7 @@ WINDOW *my_iteml;
 WINDOW *botton;
 WINDOW *notice;
 
+char ss[64];
 /* определяет, читается документ или нет */
 enum docs { VIEW, MENU_CURSES } read_doc;
 
@@ -128,42 +134,19 @@ static void select_format ( int number )
 	}
 	return;
 }
-
+void menu_show ( struct menu *, char *ss );
 /* функция смены размера окна терминала */
 static void switch_window ( int signal )
 {
 	if ( read_doc == VIEW ) return;
 
-	if ( ioctl ( 0, TIOCGWINSZ, &ws ) < 0 )
-		perror ( "winsize get ioctl" );
+	clear ();
+	mvprintw ( 0, 0, ">" );
+	mvprintw ( 0, 1, ss );
+	menu_show ( menu_ptr, NULL ); 
 
-	cur_item = item_name(current_item(my_menu));
-	row = item_index(current_item(my_menu));
-	unpost_menu(my_menu);	
-	free_menu(my_menu);
-	my_menu = new_menu((ITEM **)my_items);
-	my_iteml = derwin(botton, 16, ws.ws_col - 2, SUBWIN, 1);	
-	notice = derwin(botton, ws.ws_row - 19 , ws.ws_col - 2, 19, 1);
-	wclear ( notice );
-	keypad(my_iteml,TRUE);
-	set_menu_win(my_menu,my_iteml);
+//	keypad(stdscr,TRUE);
 					
-	set_menu_mark(my_menu," * ");
-	post_menu(my_menu);
-	set_top_row(my_menu,row);
-	wrefresh(botton);
-	wrefresh(my_iteml);
-	dir = (char *)&cur_item[0];
-	if ( dir ){
-		mvwprintw(notice,0,0,"%s",dir);
-		length=strlen(dir);
-		to_transfer_to_other_line(int line=0;length > ws.ws_col;line++){
-			dir += length;
-			mvwprintw( notice,line ,0,"%s",dir);
-			length=strlen(dir);
-		}
-	}
-	wrefresh(notice);
 }
 #define ECORRECT "\033[5;32mcheck correctness of settings and access rights\033[0m\n"
 
@@ -172,6 +155,43 @@ extern struct configs *getconfig();
 
 /* обновить */
 extern int update ( void );
+
+void add_item ( struct menu *m, char *t )
+{
+	int length = strlen ( t );
+	strncpy ( m->menu [ m->max ], t, length );
+	m->max++;
+}
+
+void menu_show ( struct menu *m, char *ss )
+{
+	if ( ioctl ( 0, TIOCGWINSZ, &ws ) < 0 )
+		perror ( "winsize get ioctl" );
+
+
+	for ( int i = 0; i < m->width; i++ ) {
+		length = strlen ( m->menu[i + m->top] );
+		if ( m->cur == i ) 
+		{
+			attroff ( COLOR_PAIR (2) );
+			attron ( COLOR_PAIR (1) | A_BOLD );
+		}
+		else 
+		{
+			attroff ( COLOR_PAIR (1) | A_BOLD );
+			attron ( COLOR_PAIR (2) );
+		}
+
+#if 1
+		for ( int index = 0; index < ws.ws_col && index < length ; index++ ) {
+			mvaddch ( i + 1, index, m->menu[i + m->top][index] );
+		}
+#endif
+
+
+		if ( i == m->max - 1 ) break;
+	}
+}
 
 int main(int argc, char *argv[])
 {
@@ -183,10 +203,10 @@ int main(int argc, char *argv[])
 
 	/* если нужно обновить */
 	if ( argc >= 2 )
-	if ( !strncmp ( argv[1], "-update\0", 8 ) ) {
-		update ( );
-		exit ( EXIT_SUCCESS );
-	}
+		if ( !strncmp ( argv[1], "-update\0", 8 ) ) {
+			update ( );
+			exit ( EXIT_SUCCESS );
+		}
 
 	FILE *rfd;
 	if ( ( rfd = fopen(cf->index,"r"))==NULL){
@@ -195,45 +215,51 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	free ( cf->index );
-//	char *line = calloc(1024, 1);
-	char line[1024];
+	char line[255];
 	int lens = 0 ;
-	choices = (char **) calloc(65535, 1);
 	int si = 0;
 	int f = 0;
 	char *ptr;
 	char *ptline;
 
+	char list[9000][255];
+
 	/* эти строки переводятся в нижний регистр,
 		 такое нужно, чтобы найти искомые подстроки не зависимо от регистра */
-#if 0
-	char *query = calloc ( 64, 1 );/* строка запроса */
-	char *query_line = calloc ( 1024, 1 ); /* cтрока меню */
-#endif
 	char query[64];
 	char query_line[1024];
 
+	struct menu m = { 0, 0, 0, 0 };
+
+	/* получить размеры экрана */
+	ioctl(0,TIOCGWINSZ,&ws);
+	m.width = ws.ws_row;
+	m.width -= 5;
+
+	menu_ptr = &m;
 
 	/* составление меню упрощено из-за rebuild */
-	while( fgets(line,1023,rfd)!=NULL){
-		choices[si] = (char *) calloc ( strlen ( line ), 1 );
-		strncpy ( choices[si], line, strlen ( line ) - 1 );
+	while( fgets(line,254,rfd) != NULL){
+
+		int length = strlen ( line );
+		/* создать список */
+		strncpy ( list[si], line, length );
 		si++;
-
-		memset ( line, 0, 1023 );
-
+		memset ( line, 0, 255 );
 	}
+
 	fclose(rfd);
-	si++;
-	choices[si] = (char *)NULL;
-	
 
 	setlocale(LC_ALL, "");
 	initscr();
 	cbreak();
 	noecho();
+	clear();
 	nonl();
 	int c;
+	start_color ();
+	init_pair ( 1, cf->sfgcolor, cf->sbgcolor );
+	init_pair ( 2, cf->fgcolor, cf->bgcolor );
 
 	struct termios term;
 	tcgetattr(1, &term);
@@ -244,62 +270,43 @@ int main(int argc, char *argv[])
 
 	ioctl(0,TIOCGWINSZ,&ws);
 
-	char * ss = calloc(64,1);
 	int a = 0;
 	int len = 0;
 	char *document = NULL;
 	char *rfc = NULL;
 	int number = 0;
+	mvprintw ( 0, 0, ">" );
 
-	
-	my_items = (ITEM **)calloc(si+1, sizeof(ITEM *));
 	int i = 0;
-
-	for(; i <= si; i++){
-		if(!choices[i]){
-			si = i;
-		}
-		my_items[i] = new_item(choices[i], NULL);
+#if 1
+	/* заполнить меню списком */
+	for ( int i = 0; i < si; i++ ) {
+		add_item ( &m, &list[i][0] );
 	}
+#endif
+	int page = 0;
 
-	my_menu = new_menu((ITEM **)my_items);
-	botton = newwin(0,0,0,0);
-	my_iteml = derwin(botton, 16, ws.ws_col - 2, SUBWIN, 1);
-	notice = derwin(botton, ws.ws_row - 19 , ws.ws_col - 2, 19, 1);
-	set_menu_win(my_menu,my_iteml);
-	keypad(my_iteml,TRUE);
-	set_menu_mark(my_menu," * ");
-	post_menu(my_menu);
-	mvwaddstr(botton,0,0,">");
-	cur_item = item_name(current_item(my_menu));
-		dir = (char *)&cur_item[0];
-		mvwprintw(notice,0,0,"%s",dir);
-		int length=strlen(dir);
-		to_transfer_to_other_line(int line=0;length > ws.ws_col;line++){
-			dir += length;
-			mvwprintw( notice,line ,0,"%s",dir);
-			length=strlen(dir);
-		}
-	wrefresh(botton);
-	wrefresh(my_iteml);
-	wrefresh(notice);
+	menu_show (  &m, NULL );
+	mvprintw ( m.width + 2, 0, m.menu[m.cur + m.top] );
+	int x, y = 1;
+
+	keypad(stdscr,TRUE);
 	int ret = 0;
-	while ( ( c = wgetch(my_iteml)) != ESC){
+	while ( ( c = getch()) != ESC){
 		static int pos = 0;
 		switch(c){
 			case CARRIAGE:
 			case NEWLINE:
-				row = item_index(current_item(my_menu));
 				document = calloc(180,1);
 				rfc = calloc(10,1);
 				int viewer = 0;
-				sscanf(cur_item, "%s ", rfc);
+				sscanf(m.menu[m.cur + m.top], "%s ", rfc);
 				number = atoi(rfc);
 				free ( rfc );
 
-				if (strstr(cur_item," PDF="))
+				if (strstr(m.menu[m.cur]," PDF="))
 					viewer += PDF;
-				if(strstr(cur_item," TXT="))
+				if(strstr(m.menu[m.cur]," TXT="))
 					viewer += TXT;
 
 				if ( viewer == 3 ) {
@@ -322,7 +329,6 @@ int main(int argc, char *argv[])
 							0, 
 							"error in choices item");
 						free(document);
-						wrefresh(notice);
 						read_doc = MENU_CURSES;
 						break;
 					}
@@ -333,7 +339,6 @@ int main(int argc, char *argv[])
 							0, 
 							"error in choices item");
 						free(document);
-						wrefresh(notice);
 						read_doc = MENU_CURSES;
 						break;
 					}
@@ -341,102 +346,71 @@ int main(int argc, char *argv[])
 				read_doc = MENU_CURSES;
 				if ( document )
 				free(document);
-#if 0
-				wclear(botton);
-				wclear(my_iteml);
-#endif
-				cur_item = item_name(current_item(my_menu));
-				dir = (char *)&cur_item[0];
-					mvwprintw(notice,0 ,0,"%s",dir);
-					length=strlen(dir);
-					to_transfer_to_other_line(int line=0;length > ws.ws_col;line++){
-						dir += length;
-						mvwprintw( notice, line ,0,"%s",dir);
-						length=strlen(dir);
-					}
-				mvwaddstr(botton,0,0,">");
-				wrefresh(botton);
-				wrefresh(my_iteml);
-				wrefresh(notice);
-				goto print;
+
+				clear();
+				mvprintw ( 0, 0, ">" );
+				mvprintw ( 0, 1, ss );
+				menu_show(&m, &ss[0]);
+				mvprintw ( m.width + 2, 0, m.menu[m.cur] );
+				break;
+			case KEY_UP:
+
+				if ( m.cur > 10 && m.cur <= ws.ws_row - 5 ) 
+				{
+					m.cur--;
+				}
+				else if ( m.cur >= 10 && m.top > 0 )
+				{
+					m.top--;
+					if ( m.top < 0 ) m.top = 0;
+				}
+				else if ( y <= 11 ) 
+				{
+					m.cur--;
+				}
+				else 
+				{
+					m.cur--;
+				}
+
+				y = m.cur; 
+				if ( y < 0 ) y = m.cur = 0;
+
+				clear ();
+				mvprintw ( 0, 0, ">" );
+				mvprintw ( 0, 1, ss );
+				menu_show( &m, &ss[0] );
+				mvprintw ( m.width + 2, 0, m.menu[m.cur + m.top] );
 				break;
 				
 			case KEY_DOWN:
-				wclear(notice);
-				ret = menu_driver(my_menu, REQ_DOWN_ITEM);
-				cur_item = item_name(current_item(my_menu));
-				dir = (char *)&cur_item[0];
-					mvwprintw(notice,0 ,0,"%s",dir);
-					length=strlen(dir);
-					to_transfer_to_other_line(int line=0;length > ws.ws_col;line++){
-						dir += length;
-						mvwprintw( notice, 0 ,0,"%s",dir);
-						length=strlen(dir);
-					}
-				mvwaddstr(botton,0,0,">");
-				wrefresh(botton);
-				wrefresh(my_iteml);
-				wrefresh(notice);
+				
+				if ( m.cur >= 10 && m.top < ( m.max - ( ws.ws_row - 5 ) ) ) 
+				{
+					m.top++;
+				}
+				else if ( y >= m.max - 10 ) 
+				{
+					m.cur++;
+				}
+				else 
+				{
+					m.cur++;
+				}
+
+				y = m.cur;
+				if ( y > ws.ws_row - 6  ) y = m.cur = ws.ws_row - 6; 
+
+				clear();
+				mvprintw ( 0, 0, ">" );
+				mvprintw ( 0, 1, ss );
+				menu_show( &m, &ss[0] );
+				mvprintw ( m.width + 2, 0, m.menu[m.cur + m.top] );
 				break;
 			case KEY_NPAGE: 
-				wclear(notice);
-				ret = menu_driver(my_menu, REQ_SCR_DPAGE);
-        if ( ret == E_REQUEST_DENIED ){
-					ret = menu_driver(my_menu, REQ_LAST_ITEM);
-				}
-        cur_item = item_name(current_item(my_menu));
-        dir = (char *)&cur_item[0];
-          mvwprintw(notice,0,0,"%s",dir);
-          length=strlen(dir);
-          to_transfer_to_other_line(int line=0;length > ws.ws_col;line++){
-            dir += length;
-            mvwprintw( notice, line ,0,"%s",dir);
-          	length=strlen(dir);
-          }
-				mvwaddstr(botton,0,0,">");
-				wrefresh(my_iteml);
-				wrefresh(botton);
-				wrefresh(notice);
         break;
 			case KEY_PPAGE:
-				wclear(notice);
-        ret = menu_driver(my_menu, REQ_SCR_UPAGE);
-        if ( ret == E_REQUEST_DENIED ){
-					ret = menu_driver(my_menu, REQ_FIRST_ITEM);
-				}
-        cur_item = item_name(current_item(my_menu));
-        dir = (char *)&cur_item[0];
-          mvwprintw(notice, 0,0,"%s",dir);
-          length=strlen(dir);
-          to_transfer_to_other_line(int line=0;length > ws.ws_col;line++){
-            dir += length;
-            mvwprintw( notice, line ,0,"%s",dir);
-          	length=strlen(dir);
-          }
-				mvwaddstr(botton,0,0,">");
-				wrefresh(my_iteml);
-				wrefresh(botton);
-				wrefresh(notice);
         break;
-			case KEY_UP: 
-				wclear(notice);
-				ret = menu_driver(my_menu, REQ_UP_ITEM);
-				if ( ret == E_REQUEST_DENIED )
-					break;
-				cur_item = item_name(current_item(my_menu));
-				dir = (char *)&cur_item[0];
-					mvwprintw(notice, 0,0,"%s",dir);
-					length=strlen(dir);
-					to_transfer_to_other_line(int line=0;length > ws.ws_col;line++){
-						dir += length;
-						mvwprintw( notice, line ,0,"%s",dir);
-						length=strlen(dir);
-					}
-				mvwaddstr(botton,0,0,">");
-				wrefresh(my_iteml);
-				wrefresh(botton);
-				wrefresh(notice);
-				break;
 			case TERMBACKSPACE:
 			case XBACKSPACE:
 				len = strlen(ss);
@@ -449,24 +423,20 @@ int main(int argc, char *argv[])
 					}
 					goto  print;
 				}
-				mvwaddstr(botton,0,0,">");
-				wrefresh(my_iteml);
-				wrefresh(botton);
 				goto print;
 				
 				break;
 			default:
-					if (c == KEY_F11)
+					if (c == KEY_F11) 
 						break;
+					
 					if ( c == DEL )
 						break;
 
 					ss[pos]=c;
 					pos++;
 print:
-				wclear(botton);
-					mvwaddstr(botton,0,0,">");
-					mvwaddstr(botton,0,1,ss);
+					for ( int i = 0; i < 9000; i++ ) memset ( m.menu[i], 0, 255 );
 					i = 0;
 					a = 0;
 
@@ -480,12 +450,13 @@ print:
 								*ptr += 0x20;
 					}
 
+						m.max = 0;
 
 					for (i = 0; i <= si - 1; i++){
 						/* перевести строку меню в нижний регистр */
 							memset ( query_line, 0, 1024 );
-							strncpy ( query_line, choices[i], strlen ( choices[i] ) - 1 );
-							int len = strlen ( choices[i] );
+							strncpy ( query_line, list[i], strlen ( list[i] ) );
+							int len = strlen ( list[i] );
 						if ( cf->reg ) {
 							ptr = &query_line[0];
 							for ( int i = 0; i <= len; i++, ptr++ ) 
@@ -496,48 +467,23 @@ print:
 
 
 						if (pos == 0){
-							my_items[i] = new_item(choices[i],NULL);
+							add_item ( &m, &list[i][0] );
 							a = i + 1;
 						}
 						else if ( strstr(query_line, query ) ) {
-							my_items[a] =  new_item(choices[i],NULL);
+							add_item ( &m, &list[i][0] );
 							a++;
 
 						}
 					}
-					for (; a <= i; a++){
-						my_items[a] = new_item(NULL,NULL);
-					}
-						unpost_menu(my_menu);	
-						free_menu(my_menu);
-						my_menu = new_menu((ITEM **)my_items);
-						my_iteml = derwin(botton, 16, ws.ws_col - 2, SUBWIN, 1);	
-						keypad(my_iteml,TRUE);
-						set_menu_win(my_menu,my_iteml);
-						
-						set_menu_mark(my_menu," * ");
-						post_menu(my_menu);
-						wrefresh(botton);
-						wrefresh(my_iteml);
-						set_top_row(my_menu,row);
-						cur_item = item_name(current_item(my_menu));
-							dir = (char *)&cur_item[0];
-						if ( dir ){
-							mvwprintw(notice,0,0,"%s",dir);
-							length=strlen(dir);
-							to_transfer_to_other_line(int line=0;length > ws.ws_col;line++){
-							dir += length;
-							mvwprintw( notice,line ,0,"%s",dir);
-							length=strlen(dir);
-							}
-						}
-						wrefresh(notice);
-					break;
+					clear ();
+					mvprintw ( 0, 0, ">" );
+					mvprintw ( 0, 1, ss );
+					m.cur = m.top = 0;
+					menu_show ( &m, &ss[0] );
+					mvprintw ( m.width + 2, 0, m.menu[m.cur] );
 		}
-		clear();
-		post_menu(my_menu);
-		wrefresh(my_iteml);
-		wrefresh(botton);
+		keypad ( stdscr, TRUE );
 	}
 
 
@@ -550,10 +496,7 @@ print:
 	free ( cf->pdfviewer );
 	free ( cf );
 	
-	for ( int i = 0; i <= si; i++ ) free ( choices[i] );
-	free ( choices );
 
-	free(cf);
 	unpost_menu(my_menu);
 	free_menu(my_menu);
 	endwin();

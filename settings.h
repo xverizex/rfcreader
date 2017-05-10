@@ -31,6 +31,16 @@ struct configs {
 	char *txtviewer;/* просмотр текстовых файлов */
 	char *pdfviewer;/* просмотр pdf файлов */
 	unsigned int reg:1 __attribute__ ((aligned(32)));/* регистро независимый поиск */
+	enum fgcolor {
+		BLACK,
+		RED,
+		GREEN,
+		YELLOW,
+		BLUE,
+		MAGENTA,
+		CYAN,
+		WHITE
+	}fgcolor,bgcolor,sfgcolor,sbgcolor;
 };
 struct configs *cf;
 
