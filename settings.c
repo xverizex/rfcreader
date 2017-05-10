@@ -497,7 +497,6 @@ struct configs * getconfig()
 					fprintf ( stderr, "error in color, maybe cyan\n" );
 				}
 				cf->sbgcolor = GREEN;
-				printf ( "green\n" );
 				c.sbg = 1;
 			}
 			if ( !strncmp ( ptr, "yellow", 6 ) ) {
