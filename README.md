@@ -44,7 +44,6 @@ $ ./configure
 $ make
 # make install
 ```
-<br>
 **обновление** теперь ещё проще. Чтобы обновить документы, достаточно написать.<br>
 ```bash
 rfcreader -update
