@@ -215,14 +215,14 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	free ( cf->index );
-	char line[255];
+	char line[285];
 	int lens = 0 ;
 	int si = 0;
 	int f = 0;
 	char *ptr;
 	char *ptline;
 
-	char list[9000][255];
+	char list[9000][285];
 
 	/* эти строки переводятся в нижний регистр,
 		 такое нужно, чтобы найти искомые подстроки не зависимо от регистра */
@@ -239,13 +239,13 @@ int main(int argc, char *argv[])
 	menu_ptr = &m;
 
 	/* составление меню упрощено из-за rebuild */
-	while( fgets(line,254,rfd) != NULL){
+	while( fgets(line,284,rfd) != NULL){
 
 		int length = strlen ( line );
 		/* создать список */
 		strncpy ( list[si], line, length );
 		si++;
-		memset ( line, 0, 255 );
+		memset ( line, 0, 285 );
 	}
 
 	fclose(rfd);
