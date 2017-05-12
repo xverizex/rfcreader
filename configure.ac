@@ -25,8 +25,7 @@ AC_CHECK_LIB([menu],[new_menu],[],
 )
 AC_CHECK_LIB([ssl],[SSL_library_init],[],
 [
-	echo "[ no ssl library;please install ssl library ]";
-	exit
+	PKG_CHECK_MODULES([ssl],[openssl],[],[exit])
 ]
 )
 
