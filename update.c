@@ -205,17 +205,16 @@ int update ( )
 		int get = 0;
 
 		int cur_time = 0;
-		int n;
-		printf ( "in total remained: %d bytes%n", total_size, &n );
+		printf ( "in total remained: %d bytes\r", total_size );
 		/* записать в файл */
 		do 
 		{
 			get = SSL_read ( ssl, file, max_recv_size );
 			if ( get <= 0 ) break;
 			total_size -= get;
-			for ( int i = 0; i < n; i++ ) printf ("\b");
-			printf ( "in total remained: %9d bytes%n", total_size, &n );
+			printf ( "in total remained: %9d bytes", total_size );
 			fflush ( stdout );
+			printf ("\r");
 			fwrite ( file, 1, get, out );
 		}
 		while ( total_size > 0 );
