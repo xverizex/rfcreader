@@ -209,9 +209,11 @@ int update ( )
 		do 
 		{
 			get = SSL_read ( ssl, file, max_recv_size );
+			if ( get <= 0 ) break;
+			total_size -= get;
 			fwrite ( file, 1, get, out );
 		}
-		while ( get > 0 );
+		while ( total_size > 0 );
 
 		fclose ( out );
 	}
