@@ -143,7 +143,8 @@ static void switch_window ( int signal )
 	clear ();
 	mvprintw ( 0, 0, ">" );
 	mvprintw ( 0, 1, ss );
-	menu_show ( menu_ptr, NULL ); 
+
+	if ( menu_ptr ) menu_show ( menu_ptr, NULL ); 
 
 //	keypad(stdscr,TRUE);
 					
@@ -167,7 +168,6 @@ void menu_show ( struct menu *m, char *ss )
 {
 	if ( ioctl ( 0, TIOCGWINSZ, &ws ) < 0 )
 		perror ( "winsize get ioctl" );
-
 
 	for ( int i = 0; i < m->width; i++ ) {
 		length = strlen ( m->menu[i + m->top] );
