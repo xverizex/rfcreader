@@ -36,6 +36,7 @@
 struct menu {
 	int top;
 	int width;
+	int height;
 	int max;
 	int cur;
 	char menu[9000][255];
@@ -143,6 +144,13 @@ static void switch_window ( int signal )
 	clear ();
 	mvprintw ( 0, 0, ">" );
 	mvprintw ( 0, 1, ss );
+	
+	if ( menu_ptr )
+	{
+		ioctl(0,TIOCGWINSZ,&ws);
+		menu_ptr->width = ws.ws_row;
+		menu_ptr->width -= 5;
+	}
 
 	if ( menu_ptr ) menu_show ( menu_ptr, NULL ); 
 
