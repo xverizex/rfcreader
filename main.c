@@ -168,7 +168,17 @@ extern int update ( void );
 void add_item ( struct menu *m, char *t )
 {
 	int length = strlen ( t );
+	length = length > 253 ? 254 : length;
 	strncpy ( m->menu [ m->max ], t, length );
+#if 1
+	int start = 0;
+	start += length;
+	for ( ; start < 254; start++ )
+	{
+		menu_ptr->menu[m->max][start] = 32;
+	}
+	menu_ptr->menu[m->max][254] = 0;
+#endif
 	m->max++;
 }
 
@@ -223,14 +233,14 @@ int main(int argc, char *argv[])
 		return 0;
 	}
 	free ( cf->index );
-	char line[285];
+	char line[512];
 	int lens = 0 ;
 	int si = 0;
 	int f = 0;
 	char *ptr;
 	char *ptline;
 
-	char list[9000][285];
+	char list[9000][255];
 
 	/* эти строки переводятся в нижний регистр,
 		 такое нужно, чтобы найти искомые подстроки не зависимо от регистра */
@@ -246,14 +256,16 @@ int main(int argc, char *argv[])
 
 	menu_ptr = &m;
 
+
 	/* составление меню упрощено из-за rebuild */
-	while( fgets(line,284,rfd) != NULL){
+	while( fgets(line,511,rfd) != NULL){
 
 		int length = strlen ( line );
+		length = length > 253 ? 253 : length;
 		/* создать список */
 		strncpy ( list[si], line, length );
 		si++;
-		memset ( line, 0, 285 );
+		memset ( line, 0, 512 );
 	}
 
 	fclose(rfd);
@@ -384,7 +396,7 @@ int main(int argc, char *argv[])
 				y = m.cur; 
 				if ( y < 0 ) y = m.cur = 0;
 
-				clear ();
+			//	clear ();
 				mvprintw ( 0, 0, ">" );
 				mvprintw ( 0, 1, ss );
 				menu_show( &m, &ss[0] );
@@ -409,7 +421,7 @@ int main(int argc, char *argv[])
 				y = m.cur;
 				if ( y > ws.ws_row - 6  ) y = m.cur = ws.ws_row - 6; 
 
-				clear();
+			//	clear();
 				mvprintw ( 0, 0, ">" );
 				mvprintw ( 0, 1, ss );
 				menu_show( &m, &ss[0] );
