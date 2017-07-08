@@ -50,10 +50,6 @@ int row;
 
 /* для curses */
 ITEM **my_items;
-MENU *my_menu;
-WINDOW *my_iteml;
-WINDOW *botton;
-WINDOW *notice;
 
 char ss[64];
 /* определяет, читается документ или нет */
@@ -516,9 +512,6 @@ print:
 	free ( cf->pdfviewer );
 	free ( cf );
 	
-
-	unpost_menu(my_menu);
-	free_menu(my_menu);
 	endwin();
 	exit(0);
 }
