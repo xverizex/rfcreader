@@ -50,6 +50,8 @@ int row;
 
 /* для curses */
 ITEM **my_items;
+WINDOW *my_iteml;
+WINDOW *notice;
 
 char ss[64];
 /* определяет, читается документ или нет */
