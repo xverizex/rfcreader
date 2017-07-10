@@ -479,7 +479,7 @@ print:
 							ptr = &query_line[0];
 							for ( int i = 0; i <= len; i++, ptr++ ) 
 								if ( *ptr >= 0x41 && *ptr <= 0x5a )
-									*ptr += 0x20;
+									*ptr ^= 32;
 						}
 						
 
