@@ -6,7 +6,7 @@
 Каталог настроек теперь в `$HOME/.rfcreader`, при первом запуске **rfcreader** его создаст. ( у кого была старая версия, нужно удалить файл настроек в домашнем каталоге. ). 
 
 Список зависимостей:
-* curses
+* ncurses
 * ssl
 
 В файле настроек можно указать:
@@ -33,21 +33,11 @@ sbgcolor=black
 
 установка:<br>
 ```bash
-$ aclocal
-$ autoheader
-$ autoconf
-$ automake -a -c --add-missing
-$ ./configure
 $ make
 # make install
 ```
-или<br>
-```bash
-$ ./autogen.sh
-$ ./configure
-$ make
-# make install
-```
+
+
 **обновление** теперь ещё проще. Чтобы обновить документы, достаточно написать.<br>
 ```bash
 rfcreader -update
