@@ -90,7 +90,7 @@ int update ( )
 			"\r\n"
 		 	);
 
-	method = TLSv1_2_client_method ( );
+	method = SSLv23_client_method();
 	ctx = SSL_CTX_new ( method );
 	ssl = SSL_new ( ctx );
 	SSL_set_fd ( ssl, sock );
