@@ -120,10 +120,10 @@ static Paths * getpath()
 							"bgcolor = black\n"
 							"\n"
 							"# selection foreground color.\n"
-							"sfgcolor = black\n"
+							"sfgcolor = yellow\n"
 							"\n"
 							"# selection background color.\n"
-							"sbgcolor = white\n"
+							"sbgcolor = black\n"
 
 							);
 					fclose(newconfig);
