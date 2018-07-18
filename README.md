@@ -59,7 +59,4 @@ rfcreader -update
 **поиск по ключевому слову и выбор**
 ![](http://i.imgur.com/VWoLOi6.png)
 
-# видео:
-**презентация 0.5 версии**
-<a href=https://youtu.be/X4xS62gJsWQ>https://youtu.be/X4xS62gJsWQ<a/>
 
