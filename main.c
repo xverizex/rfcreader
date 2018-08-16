@@ -213,7 +213,6 @@ int main(int argc, char *argv[])
 {
 
 
-	signal ( SIGWINCH, switch_window );
 	read_doc = MENU_CURSES;
 	struct configs * cf = getconfig();
 
@@ -224,6 +223,7 @@ int main(int argc, char *argv[])
 			exit ( EXIT_SUCCESS );
 		}
 
+	signal ( SIGWINCH, switch_window );
 	FILE *rfd;
 	if ( ( rfd = fopen(cf->index,"r"))==NULL){
 		fprintf(stderr, ECORRECT );
