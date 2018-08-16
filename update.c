@@ -205,19 +205,21 @@ int update ( )
 		int get = 0;
 
 		int cur_time = 0;
-		printf ( "in total remained: %d bytes\r", total_size );
 		/* записать в файл */
+		unsigned long percent = 0;
+		printf ( "total downloaded: %4ld%%\r", percent );
 		do 
 		{
 			get = SSL_read ( ssl, file, max_recv_size );
 			if ( get <= 0 ) break;
-			total_size -= get;
-			printf ( "in total remained: %9d bytes", total_size );
+			percent += get;
+			long result = percent * 100.0 / total_size;
+			printf ( "total donwloaded: %4ld%%", result );
 			fflush ( stdout );
 			printf ("\r");
 			fwrite ( file, 1, get, out );
 		}
-		while ( total_size > 0 );
+		while ( percent < total_size );
 		printf ( "\n" );
 
 		fclose ( out );
@@ -234,10 +236,10 @@ int update ( )
 	{
 		fprintf ( stderr, "deleting rfc documents.\n" );
 		struct dirent *dr;
-		char delete[255];
+		char delete[512];
 		DIR *dir_rfc = opendir ( cf->datadir );
 		while ( ( dr = readdir ( dir_rfc ) ) != NULL ) {
-			sprintf ( delete, "%s/%s", cf->datadir, dr->d_name );
+			snprintf ( delete, 512, "%s/%s", cf->datadir, dr->d_name );
 			unlink ( delete );
 		}
 
