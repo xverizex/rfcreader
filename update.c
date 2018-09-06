@@ -214,7 +214,7 @@ int update ( )
 			if ( get <= 0 ) break;
 			percent += get;
 			long result = percent * 100.0 / total_size;
-			printf ( "total donwloaded: %4ld%%", result );
+			printf ( "total downloaded: %4ld%%", result );
 			fflush ( stdout );
 			printf ("\r");
 			fwrite ( file, 1, get, out );
