@@ -57,6 +57,11 @@ char ss[64];
 /* определяет, читается документ или нет */
 enum docs { VIEW, MENU_CURSES } read_doc;
 
+void print_debug ( const char *s )
+{
+	mvprintw ( 0, 0, "%s", s );
+}
+
 /* функция выбора формата просмотра */
 static void select_format ( int number )
 {
@@ -322,9 +327,9 @@ int main(int argc, char *argv[])
 				number = atoi(rfc);
 				free ( rfc );
 
-				if (strstr(m.menu[m.cur]," PDF="))
+				if (strstr(m.menu[m.cur]," PDF"))
 					viewer += PDF;
-				if(strstr(m.menu[m.cur]," TXT="))
+				if(strstr(m.menu[m.cur]," TXT"))
 					viewer += TXT;
 
 				if ( viewer == 3 ) {
