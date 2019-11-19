@@ -220,7 +220,7 @@ struct configs * getconfig()
 			/* если не существует, создать */
 			if ( access ( cf->datadir, F_OK ) ) {
 				mkdir ( cf->datadir, S_IRWXU );
-				fprintf ( stderr, "please run rfcreader -update for downoad rfc tar\n" );
+				fprintf ( stderr, "please run rfcreader -update for download rfc tar\n" );
 			}
 
 			/* 6 - /index */
