@@ -1,25 +1,25 @@
 # rfcreader 0.5
-**rfcreader** это удобный инструмент для навигации по документам rfc.<br>
-* выбор просмотра txt или pdf, (если доступно).
-* поиск ключевых слов не зависит от регистра букв.
+**rfcreader** the instrument for navigation on documents RFC.<br>
+* the select is show txt or pdf.
+* The find of keywords is no dependent case a character.
 
-Каталог настроек теперь в `$HOME/.rfcreader`, при первом запуске **rfcreader** его создаст. ( у кого была старая версия, нужно удалить файл настроек в домашнем каталоге. ). 
+directory of settings is stored in '$HOME/.rfcreader'. At the first start, the program will create it.
 
-Список зависимостей:
+Additional dependencies:
 * ncurses
 * ssl
 
-В файле настроек можно указать:
-* dir - каталог где хранятся rfc файлы.
-* txt - программа для просмотра текстовых файлов.
-* pdf - программа для просмотра pdf документов, эту опцию можно не указывать.
-* reg - если включена, то поиск ведётся регистро-независимый. Регистро зависимый выполняется быстрее.
-* fgcolor - цвет переднего плана.
-* bgcolor - цвет заднего плана.
-* sfgcolor - цвет выбранного, передний план.
-* sbgcolor - цвет выбранного, задний план.
+Options in the config file:
+* dir - the directory, where RFC documents are storing.
+* txt - the program for seeing the text files.
+* pdf - the program for seeing the pdf files. This option can be omitted.
+* reg - if set, then the find case-independent.
+* fgcolor - a foreground color.
+* bgcolor - a background color.
+* sfgcolor - the selected color is foreground.
+* sbgcolor - the selected color is background.
 
-например:
+example
 ```bash
 dir=/root/rfc
 txt=less
@@ -31,32 +31,31 @@ sfgcolor=white
 sbgcolor=black
 ```
 
-установка:<br>
+install:<br>
 ```bash
 $ make
 # make install
 ```
 
 
-**обновление** теперь ещё проще. Чтобы обновить документы, достаточно написать.<br>
+**update**<br>
 ```bash
 rfcreader -update
 ```
-**внимание** rfcreader обновиться только если указан каталог в dir в файле настроек.
 
-запуск:
+**notice** the rfcreader is will update if set path in option dir in the settings file.
+
+start:
 `rfcreader`
 
-# использование:
+# use:
 
-Написать ключевое слово и появятся совпадения, не зависит от регистра.<br>
-Выбрать нужный элемент спользуя клавиши вниз вверх и нажать клавишу Enter.<br> 
-Выход из программы клавиша ESC.<br>
+input the keyword. press the key down or up to need string. Press 'Enter'. for exit from the program, press ESC.
 
-# изображения:
-**вид программы**
+# screenshots
+**look of the program**
 ![](http://i.imgur.com/3NruQrQ.png)
-**поиск по ключевому слову и выбор**
+**find by keyword and select**
 ![](http://i.imgur.com/VWoLOi6.png)
 
 
