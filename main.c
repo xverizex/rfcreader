@@ -39,7 +39,7 @@ struct menu {
 	int height;
 	int max;
 	int cur;
-	char menu[9000][255];
+	char menu[10000][255];
 };
 struct menu *menu_ptr;
 
@@ -243,7 +243,7 @@ int main(int argc, char *argv[])
 	char *ptr;
 	char *ptline;
 
-	char list[9000][255];
+	char list[10000][255];
 
 	/* эти строки переводятся в нижний регистр,
 		 такое нужно, чтобы найти искомые подстроки не зависимо от регистра */
@@ -251,6 +251,7 @@ int main(int argc, char *argv[])
 	char query_line[1024];
 
 	struct menu m = { 0, 0, 0, 0 };
+	m.max = 0;
 
 	/* получить размеры экрана */
 	ioctl(0,TIOCGWINSZ,&ws);
