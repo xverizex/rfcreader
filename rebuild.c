@@ -19,6 +19,9 @@
  */
 #include "settings.h"
 
+extern struct configs *cf;
+extern int length;
+
 int rebuild ( )
 {
 	char datadir[255];

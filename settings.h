@@ -61,9 +61,7 @@ struct configs {
 		WHITE
 	}fgcolor,bgcolor,sfgcolor,sbgcolor;
 };
-struct configs *cf;
 
 #define if_have_path_and_file_of_list if (( cf->datadir ) && ( cf->list ))
 #define read_every_line_in_config_file  while(fgets(line,127,conf)!=NULL)
-int length; /* длина для информационног окна, если длина превышает, написать на следующей строке */
 #endif

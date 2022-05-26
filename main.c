@@ -62,6 +62,9 @@ void print_debug ( const char *s )
 	mvprintw ( 0, 0, "%s", s );
 }
 
+struct configs *cf;
+int length;
+
 /* функция выбора формата просмотра */
 static void select_format ( int number )
 {

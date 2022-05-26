@@ -19,6 +19,9 @@
  */
 #include "settings.h"
 
+extern struct configs *cf;
+extern int length;
+
 typedef struct {
 	char *cdir;
 	char *settings;
