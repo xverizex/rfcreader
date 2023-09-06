@@ -47,6 +47,7 @@ struct configs {
 	char *cdir; 		/* каталог настроек */
 	char *index; 		/* файл список */
 	char *datadir; 	/* каталог документов rfc */
+	char *rfcarchive;  /* указать архив rfc документов. */
 	char *txtviewer;/* просмотр текстовых файлов */
 	char *pdfviewer;/* просмотр pdf файлов */
 	unsigned int reg:1 __attribute__ ((aligned(32)));/* регистро независимый поиск */

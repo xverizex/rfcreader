@@ -227,6 +227,11 @@ int main(int argc, char *argv[])
 	/* если нужно обновить */
 	if ( argc >= 2 )
 		if ( !strncmp ( argv[1], "-update\0", 8 ) ) {
+			if (argc < 3) {
+				printf ("You should set path to rfc archive. RFC.tar.gz\n");
+				exit (EXIT_FAILURE);
+			}
+			cf->rfcarchive = strdup (argv[2]);
 			update ( );
 			exit ( EXIT_SUCCESS );
 		}

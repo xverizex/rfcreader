@@ -1,4 +1,4 @@
-# rfcreader 0.7
+# rfcreader 0.8
 **rfcreader** the instrument for navigation on documents RFC.<br>
 * the select is show txt or pdf.
 * The find of keywords is no dependent case a character.
@@ -7,7 +7,6 @@ directory of settings is stored in '$HOME/.rfcreader'. At the first start, the p
 
 Additional dependencies:
 * ncurses
-* libssl
 
 Options in the config file:
 * dir - the directory, where RFC documents are storing.
@@ -40,7 +39,7 @@ $ make
 
 **update**<br>
 ```bash
-rfcreader -update
+rfcreader -update [path to downloaded a rfc file archive]
 ```
 
 **notice** the rfcreader is will update if set path in option dir in the settings file.
